@@ -1,0 +1,26 @@
+# Virtual environments
+venv/
+**/venv/
+.venv/
+env/
+ENV/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database (karena sudah pakai Neon Cloud)
+*.sqlite3
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
