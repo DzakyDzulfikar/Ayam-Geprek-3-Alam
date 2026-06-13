@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-q+l=3=1o63nyshv95uaoj)o7%gb%0)=^-ipf&7h5vq6$$rc=^2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ayamgeprek3alam.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -76,19 +76,40 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'neondb',
-        'USER': 'neondb_owner',
-        'PASSWORD': 'npg_7oKqGRNd8YeM',
-        'HOST': 'ep-silent-brook-aoscfqjo-pooler.c-2.ap-southeast-1.aws.neon.tech',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
+import os
+import socket
+
+# Check if running on PythonAnywhere (web app or console)
+ON_PYTHONANYWHERE = (
+    'PYTHONANYWHERE_SITE' in os.environ or
+    'pythonanywhere' in socket.gethostname() or
+    'liveconsole' in socket.gethostname() or
+    os.path.exists('/home/ayamgeprek3alam')
+)
+
+if ON_PYTHONANYWHERE:
+    # Use SQLite on PythonAnywhere to bypass the free-tier network blocks for external TCP connections
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-}
+else:
+    # Use Neon PostgreSQL for local development (and other environments with internet access)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'neondb',
+            'USER': 'neondb_owner',
+            'PASSWORD': 'npg_7oKqGRNd8YeM',
+            'HOST': 'ep-silent-brook-aoscfqjo-pooler.c-2.ap-southeast-1.aws.neon.tech',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            }
+        }
+    }
 
 
 # Password validation
