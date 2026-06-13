@@ -1,0 +1,287 @@
+import { useState, useEffect } from 'react';
+import { Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import API from '../services/api';
+
+export function StockManagement() {
+  const userRole = localStorage.getItem('userRole');
+  const [stocks, setStocks] = useState([]);
+
+  useEffect(() => {
+    fetchStocks();
+  }, []);
+
+  const fetchStocks = async () => {
+    try {
+      const response = await API.get('bahanbaku/');
+      const mapped = response.data.map((item) => ({
+        id: item.id,
+        name: item.nama_bahan,
+        unit: item.satuan,
+        quantity: item.stok_saat_ini,
+        minStock: item.stok_minimum,
+        lastUpdate: new Date(item.terakhir_diupdate).toISOString().split('T')[0],
+      }));
+      setStocks(mapped);
+    } catch (err) {
+      console.error('Error fetching stocks:', err);
+    }
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStock, setEditingStock] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    unit: 'kg',
+    quantity: 0,
+    minStock: 0,
+  });
+
+  const handleOpenModal = (stock = null) => {
+    if (stock) {
+      setEditingStock(stock);
+      setFormData({
+        name: stock.name,
+        unit: stock.unit,
+        quantity: stock.quantity,
+        minStock: stock.minStock,
+      });
+    } else {
+      setEditingStock(null);
+      setFormData({ name: '', unit: 'kg', quantity: 0, minStock: 0 });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingStock(null);
+    setFormData({ name: '', unit: 'kg', quantity: 0, minStock: 0 });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      nama_bahan: formData.name,
+      satuan: formData.unit,
+      stok_saat_ini: parseFloat(formData.quantity) || 0,
+      stok_minimum: parseFloat(formData.minStock) || 0,
+    };
+
+    try {
+      if (editingStock) {
+        await API.put(`bahanbaku/${editingStock.id}/`, payload);
+      } else {
+        await API.post('bahanbaku/', payload);
+      }
+      fetchStocks();
+      handleCloseModal();
+    } catch (err) {
+      console.error('Error saving stock:', err);
+      alert('Gagal menyimpan data stok ke backend');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+      try {
+        await API.delete(`bahanbaku/${id}/`);
+        fetchStocks();
+      } catch (err) {
+        console.error('Error deleting stock:', err);
+        alert('Gagal menghapus item dari backend');
+      }
+    }
+  };
+
+  const getLowStockCount = () => {
+    return stocks.filter((stock) => stock.quantity < stock.minStock).length;
+  };
+
+  return (
+    <div className="p-4 sm:p-8 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Stok</h1>
+          <p className="text-gray-600 dark:text-gray-400">Kelola inventori bahan baku restoran</p>
+        </div>
+        {userRole === 'admin' && (
+          <button
+            onClick={() => handleOpenModal()}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Tambah Stok
+          </button>
+        )}
+      </div>
+
+      {/* Warning Card */}
+      {getLowStockCount() > 0 && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-4 rounded-xl flex items-center gap-4 shadow-sm transition-colors duration-300">
+          <div className="bg-red-100 dark:bg-red-900/50 p-2 rounded-full">
+            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <p className="text-red-900 dark:text-red-300 font-bold">Peringatan Stok Menipis!</p>
+            <p className="text-red-700 dark:text-red-400 text-sm mt-0.5">
+              Terdapat <strong>{getLowStockCount()} item</strong> yang memerlukan restok segera.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Stock Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors duration-300">
+        <div className="overflow-x-auto">
+          <table className="w-full whitespace-nowrap">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 transition-colors">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Bahan</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Satuan</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Jumlah Tersedia</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Batas Minimum</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Update Terakhir</th>
+                {userRole === 'admin' && (
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-24">Aksi</th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {stocks.map((stock) => {
+                const isLow = stock.quantity < stock.minStock;
+                return (
+                  <tr key={stock.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{stock.name}</td>
+                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{stock.unit}</td>
+                    <td className="px-6 py-4">
+                      <span className={`font-semibold ${isLow ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                        {stock.quantity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{stock.minStock}</td>
+                    <td className="px-6 py-4">
+                      {isLow ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Menipis
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Aman
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{stock.lastUpdate}</td>
+                    {userRole === 'admin' && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleOpenModal(stock)}
+                            className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-transparent dark:hover:border-blue-800"
+                            title="Edit Stok"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(stock.id)}
+                            className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-transparent dark:hover:border-red-800"
+                            title="Hapus Stok"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              {editingStock ? 'Perbarui Data Stok' : 'Tambah Stok Baru'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nama Bahan Baku</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transiton-shadow"
+                  placeholder="Contoh: Bawang Merah"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Satuan</label>
+                  <select
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="gram">Gram (g)</option>
+                    <option value="liter">Liter (l)</option>
+                    <option value="ml">Mililiter (ml)</option>
+                    <option value="pcs">Pieces (pcs)</option>
+                    <option value="pack">Pack / Bungkus</option>
+                  </select>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jumlah Tersedia</label>
+                  <input
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Batas Stok Minimum (Peringatan)</label>
+                <input
+                  type="number"
+                  value={formData.minStock}
+                  onChange={(e) => setFormData({ ...formData, minStock: parseFloat(e.target.value) || 0 })}
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors shadow-sm"
+                >
+                  {editingStock ? 'Simpan Perubahan' : 'Tambah Stok'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

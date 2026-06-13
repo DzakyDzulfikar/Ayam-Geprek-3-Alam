@@ -1,0 +1,10 @@
+{
+  "name": "ayam-geprek-3-alam-root",
+  "version": "1.0.0",
+  "description": "Orkestrasi Root untuk Ayam Geprek 3 Alam",
+  "scripts": {
+    "dev:backend": "cd backend && venv\\Scripts\\python.exe manage.py runserver",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npx -y concurrently \"npm:dev:backend\" \"npm:dev:frontend\""
+  }
+}
