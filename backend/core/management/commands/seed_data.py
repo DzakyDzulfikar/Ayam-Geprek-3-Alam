@@ -149,7 +149,12 @@ class Command(BaseCommand):
         try:
             while current_date <= end_date:
                 daily_total = 0
-                target_revenue = random.randint(500000, 600000)
+                weekday = current_date.weekday()
+                # Weekend spikes and weekday dips to make sales data realistic and interesting
+                if weekday in [4, 5, 6]:  # Jumat, Sabtu, Minggu (Ramai)
+                    target_revenue = random.randint(650000, 800000)
+                else:                     # Senin s.d Kamis (Biasa)
+                    target_revenue = random.randint(400000, 500000)
                 
                 while daily_total < (target_revenue - 18000):
                     hour = random.randint(10, 20)

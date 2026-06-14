@@ -1,3 +1,4 @@
+import math
 from datetime import timedelta
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
@@ -61,6 +62,23 @@ def predict_sales_and_stock(days_to_predict=7):
                 "prediksi_penjualan_porsi": estimasi
             })
             total_estimasi_stok_diperlukan += estimasi
+            
+        y_true = df['y'].values
+        y_pred = model.predict(df[['X']].values)
+        
+        slope = float(model.coef_[0])
+        intercept = float(model.intercept_)
+        
+        detail_aktual = []
+        actual_rows = df.tail(7) if len(df) >= 7 else df
+        for _, row in actual_rows.iterrows():
+            t_str = row['tanggal']
+            if not isinstance(t_str, str):
+                t_str = t_str.strftime('%Y-%m-%d')
+            detail_aktual.append({
+                "tanggal": t_str,
+                "aktual_penjualan_porsi": int(row['penjualan_ayam'])
+            })
     else:
         if len(data_list) < 5:
             today = timezone.localtime(timezone.now()).date()
@@ -104,6 +122,51 @@ def predict_sales_and_stock(days_to_predict=7):
                 "prediksi_penjualan_porsi": estimasi
             })
             total_estimasi_stok_diperlukan += estimasi
+            
+        y_true = y
+        y_pred = [m * x_val + c for x_val in X]
+        
+        slope = float(m)
+        intercept = float(c)
+        
+        detail_aktual = []
+        actual_rows = data_list[-7:] if len(data_list) >= 7 else data_list
+        for item in actual_rows:
+            t_str = item['tanggal']
+            if not isinstance(t_str, str):
+                t_str = t_str.strftime('%Y-%m-%d')
+            detail_aktual.append({
+                "tanggal": t_str,
+                "aktual_penjualan_porsi": int(item['penjualan_ayam'])
+            })
+            
+    # Hitung error statistics
+    absolute_percentage_errors = []
+    for yt, yp in zip(y_true, y_pred):
+        if yt > 0:
+            absolute_percentage_errors.append(abs((yt - yp) / yt))
+        else:
+            absolute_percentage_errors.append(0.0)
+    mape = (sum(absolute_percentage_errors) / len(absolute_percentage_errors)) * 100 if absolute_percentage_errors else 0.0
+    accuracy = max(0.0, min(100.0, 100.0 - mape))
+    
+    squared_errors = [(yt - yp) ** 2 for yt, yp in zip(y_true, y_pred)]
+    rmse = (sum(squared_errors) / len(squared_errors)) ** 0.5 if squared_errors else 0.0
+    
+    y_mean = sum(y_true) / len(y_true) if len(y_true) > 0 else 0.0
+    ss_tot = sum((yt - y_mean) ** 2 for yt in y_true)
+    ss_res = sum((yt - yp) ** 2 for yt, yp in zip(y_true, y_pred))
+    r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
+    r2 = max(0.0, min(1.0, r2))
+    
+    metrics = {
+        "mape": round(float(mape), 2),
+        "accuracy": round(float(accuracy), 2),
+        "rmse": round(float(rmse), 2),
+        "r2": round(float(r2 * 100), 2),
+        "slope": round(float(slope), 4),
+        "intercept": round(float(intercept), 4)
+    }
         
     # 2. Pengambilan Resep dan Riwayat Detail Transaksi untuk Kebutuhan Bahan Baku Riil
     recipes = defaultdict(list)
@@ -223,30 +286,30 @@ def predict_sales_and_stock(days_to_predict=7):
         if status == 'KRITIS':
             deficit = (need_3_days + bahan.stok_minimum) - bahan.stok_saat_ini
             deficit = max(0.0, deficit)
-            recommendation = f"Butuh {round(deficit, 1)} {bahan.satuan} (URGENT)"
+            recommendation = f"Butuh {int(math.ceil(deficit))} {bahan.satuan} (URGENT)"
         elif status == 'PERINGATAN':
             deficit = (need_7_days + bahan.stok_minimum) - bahan.stok_saat_ini
             deficit = max(0.0, deficit)
-            recommendation = f"Butuh {round(deficit, 1)} {bahan.satuan}"
+            recommendation = f"Butuh {int(math.ceil(deficit))} {bahan.satuan}"
         else:
             if bahan.stok_saat_ini < (need_7_days + bahan.stok_minimum):
                 deficit = (need_7_days + bahan.stok_minimum) - bahan.stok_saat_ini
                 deficit = max(0.0, deficit)
-                recommendation = f"Saran restok {round(deficit, 1)} {bahan.satuan} untuk 7 hari"
+                recommendation = f"Saran restok {int(math.ceil(deficit))} {bahan.satuan} untuk 7 hari"
                 
         # Rata-rata penggunaan historis harian riil
         avg_hist_usage = sum(b_usage.values()) / len(b_usage) if b_usage else 0.0
         
         stock_predictions.append({
             "item": bahan.nama_bahan,
-            "current": round(bahan.stok_saat_ini, 1),
-            "predicted": round(predicted_remaining, 1),
+            "current": round(float(bahan.stok_saat_ini), 1),
+            "predicted": round(float(predicted_remaining), 1),
             "recommendation": recommendation,
             "satuan": bahan.satuan,
             "status": status,
-            "days_left": round(days_left, 1),
-            "avg_usage": round(avg_hist_usage, 2),
-            "min_limit": round(bahan.stok_minimum, 1)
+            "days_left": round(float(days_left), 1),
+            "avg_usage": round(float(avg_hist_usage), 2),
+            "min_limit": round(float(bahan.stok_minimum), 1)
         })
         
     # 6. Menghasilkan Teks Rekomendasi
@@ -259,6 +322,8 @@ def predict_sales_and_stock(days_to_predict=7):
         "status": "success",
         "hari_diprediksi": days_to_predict,
         "detail_prediksi": hasil_prediksi,
+        "detail_aktual": detail_aktual,
+        "metrics": metrics,
         "stock_prediction": stock_predictions,
         "rekomendasi_sistem": rekomendasi,
     }
