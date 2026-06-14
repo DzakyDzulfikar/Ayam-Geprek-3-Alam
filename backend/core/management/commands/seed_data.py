@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+from django.db import transaction, connection
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from core.models import CustomUser, Menu, BahanBaku, Resep, TransaksiPenjualan, DetailTransaksi
@@ -7,6 +8,7 @@ from core.models import CustomUser, Menu, BahanBaku, Resep, TransaksiPenjualan, 
 class Command(BaseCommand):
     help = 'Mengisi database awal dengan data pengujian Ayam Geprek 3 Alam'
 
+    @transaction.atomic
     def handle(self, *args, **kwargs):
         self.stdout.write('Mengosongkan database lama...')
         DetailTransaksi.objects.all().delete()
