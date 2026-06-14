@@ -33,7 +33,6 @@ export function StockManagement() {
     name: '',
     unit: 'kg',
     quantity: '',
-    minStock: '',
   });
 
   const cleanInteger = (val) => {
@@ -56,11 +55,10 @@ export function StockManagement() {
         name: stock.name,
         unit: stock.unit,
         quantity: stock.quantity !== undefined && stock.quantity !== null ? String(Math.round(stock.quantity)) : '',
-        minStock: stock.minStock !== undefined && stock.minStock !== null ? String(Math.round(stock.minStock)) : '',
       });
     } else {
       setEditingStock(null);
-      setFormData({ name: '', unit: 'kg', quantity: '', minStock: '' });
+      setFormData({ name: '', unit: 'kg', quantity: '' });
     }
     setIsModalOpen(true);
   };
@@ -68,7 +66,7 @@ export function StockManagement() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingStock(null);
-    setFormData({ name: '', unit: 'kg', quantity: '', minStock: '' });
+    setFormData({ name: '', unit: 'kg', quantity: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -78,7 +76,6 @@ export function StockManagement() {
       nama_bahan: formData.name,
       satuan: formData.unit,
       stok_saat_ini: parseInt(formData.quantity, 10) || 0,
-      stok_minimum: parseInt(formData.minStock, 10) || 0,
     };
 
     try {
@@ -283,17 +280,9 @@ export function StockManagement() {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Batas Stok Minimum (Peringatan)</label>
-                <input
-                  type="number"
-                  value={formData.minStock}
-                  onChange={(e) => setFormData({ ...formData, minStock: cleanInteger(e.target.value) })}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
-                  min="0"
-                  step="1"
-                  required
-                />
+              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 p-3 rounded-lg text-xs text-orange-800 dark:text-orange-350 leading-normal flex items-start gap-2">
+                <span>💡</span>
+                <span>Batas stok minimum dihitung secara otomatis oleh AI berdasarkan rata-rata penggunaan harian untuk menjaga efisiensi inventori Anda.</span>
               </div>
 
               <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">

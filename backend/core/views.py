@@ -24,6 +24,11 @@ class BahanBakuViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        from .ai_service import recalculate_all_minimum_stocks
+        try:
+            recalculate_all_minimum_stocks()
+        except Exception as e:
+            print("Error recalculating min stocks:", e)
         return BahanBaku.objects.all()
 
 class TransaksiPenjualanViewSet(viewsets.ModelViewSet):
@@ -101,6 +106,11 @@ def get_dashboard_summary(request):
     API endpoint untuk mengambil ringkasan data operasional untuk dashboard.
     """
     try:
+        from .ai_service import recalculate_all_minimum_stocks
+        try:
+            recalculate_all_minimum_stocks()
+        except Exception:
+            pass
         today = timezone.localtime(timezone.now()).date()
         # Hitung total pendapatan hari ini
         total_revenue = TransaksiPenjualan.objects.filter(

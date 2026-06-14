@@ -354,3 +354,55 @@ def predict_sales_and_stock(days_to_predict=7):
         "stock_prediction": stock_predictions,
         "rekomendasi_sistem": rekomendasi,
     }
+
+
+def recalculate_all_minimum_stocks():
+    """
+    Menghitung batas stok minimum (safety stock) secara otomatis untuk seluruh bahan baku menggunakan AI.
+    Rumus: Batas Minimum = Rata-rata penggunaan harian 30 hari terakhir * 3 hari buffer.
+    Jika tidak ada transaksi historis, digunakan nilai default minimal (5 porsi/satuan).
+    """
+    today = timezone.localtime(timezone.now()).date()
+    start_date = today - timedelta(days=29)
+    
+    # Ambil resep
+    recipes = defaultdict(list)
+    for r in Resep.objects.all():
+        recipes[r.menu_id].append((r.bahan_baku_id, r.jumlah_dibutuhkan))
+        
+    # Ambil transaksi 30 hari terakhir
+    details = DetailTransaksi.objects.filter(
+        transaksi__tanggal_transaksi__date__range=[start_date, today]
+    ).select_related('transaksi', 'menu').annotate(
+        tanggal=TruncDate('transaksi__tanggal_transaksi')
+    ).values('tanggal', 'menu_id', 'kuantitas')
+    
+    # Hitung penggunaan bahan baku per tanggal
+    historical_usage = defaultdict(lambda: defaultdict(float))
+    for d in details:
+        date_key = d['tanggal']
+        if not date_key:
+            continue
+        for b_id, amount in recipes[d['menu_id']]:
+            historical_usage[b_id][date_key] += amount * d['kuantitas']
+            
+    # Update stok_minimum untuk setiap bahan baku
+    for bahan in BahanBaku.objects.all():
+        b_usage = historical_usage[bahan.id]
+        if b_usage:
+            # Rata-rata penggunaan harian pada 30 hari terakhir
+            total_used = sum(b_usage.values())
+            avg_daily_usage = total_used / 30.0
+            
+            # Safety stock = 3 hari penggunaan
+            min_stock = avg_daily_usage * 3.0
+            
+            calculated_min = int(math.ceil(min_stock))
+            if calculated_min < 5:
+                calculated_min = 5
+        else:
+            calculated_min = 5
+            
+        bahan.stok_minimum = calculated_min
+        bahan.save()
+
