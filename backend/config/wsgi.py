@@ -22,9 +22,14 @@ application = get_wsgi_application()
 try:
     project_dir = '/home/ayamgeprek3alam/Ayam-Geprek-3-Alam'
     if os.path.exists(project_dir):
-        # 1. Run git pull to pull the latest updates from GitHub
+        # 1. Force update the files from GitHub (fetch + hard reset to main)
+        subprocess.run(
+            ["git", "-c", "http.sslVerify=false", "fetch", "--all"],
+            cwd=project_dir,
+            capture_output=True
+        )
         result_pull = subprocess.run(
-            ["git", "-c", "http.sslVerify=false", "pull"],
+            ["git", "-c", "http.sslVerify=false", "reset", "--hard", "origin/main"],
             cwd=project_dir,
             capture_output=True,
             text=True
