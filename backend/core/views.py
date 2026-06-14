@@ -61,13 +61,14 @@ def custom_login(request):
         
     user = authenticate(username=username, password=password)
     if user is not None:
+        role = 'karyawan' if user.role == 'kasir' else user.role
         return Response({
             "status": "success",
             "user": {
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "role": user.role
+                "role": role
             }
         }, status=status.HTTP_200_OK)
     else:
@@ -100,8 +101,18 @@ def get_dashboard_summary(request):
             transaksi__tanggal_transaksi__date=today
         ).aggregate(total_qty=Sum('kuantitas'))['total_qty'] or 0
         
-        # Hitung jumlah bahan baku dengan stok kritis
-        low_stock_count = sum(1 for b in BahanBaku.objects.all() if b.is_kritis)
+        # Hitung jumlah bahan baku berdasarkan status: merah (menipis), kuning (peringatan), hijau (aman)
+        all_bahan = BahanBaku.objects.all()
+        low_stock_count = 0
+        warning_stock_count = 0
+        safe_stock_count = 0
+        for b in all_bahan:
+            if b.stok_saat_ini <= b.stok_minimum:
+                low_stock_count += 1
+            elif b.stok_saat_ini <= b.stok_minimum * 1.5:
+                warning_stock_count += 1
+            else:
+                safe_stock_count += 1
 
         # Menu terpopuler
         top_menu_query = DetailTransaksi.objects.values('menu__nama_menu').annotate(
@@ -158,6 +169,8 @@ def get_dashboard_summary(request):
             "total_revenue": float(total_revenue),
             "todays_portions": todays_portions,
             "low_stock_count": low_stock_count,
+            "warning_stock_count": warning_stock_count,
+            "safe_stock_count": safe_stock_count,
             "top_menu": top_menu_data[0]["name"] if top_menu_data else "Dada",
             "top_menu_sold": top_menu_data[0]["sold"] if top_menu_data else 0,
             "sales_data": sales_weekly,

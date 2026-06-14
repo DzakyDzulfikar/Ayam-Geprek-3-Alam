@@ -151,27 +151,47 @@ export function StockManagement() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {stocks.map((stock) => {
-                const isLow = stock.quantity < stock.minStock;
+                const isLow = stock.quantity <= stock.minStock;
+                const isWarning = !isLow && stock.quantity <= stock.minStock * 1.5;
+                
+                let statusBadge;
+                let textClass = 'text-gray-900 dark:text-white';
+                
+                if (isLow) {
+                  statusBadge = (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50">
+                      Menipis
+                    </span>
+                  );
+                  textClass = 'text-red-600 dark:text-red-400';
+                } else if (isWarning) {
+                  statusBadge = (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-900/50">
+                      Peringatan
+                    </span>
+                  );
+                  textClass = 'text-yellow-600 dark:text-yellow-500';
+                } else {
+                  statusBadge = (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+                      Aman
+                    </span>
+                  );
+                  textClass = 'text-green-600 dark:text-green-400';
+                }
+
                 return (
                   <tr key={stock.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{stock.name}</td>
                     <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{stock.unit}</td>
                     <td className="px-6 py-4">
-                      <span className={`font-semibold ${isLow ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                      <span className={`font-semibold ${textClass}`}>
                         {stock.quantity}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{stock.minStock}</td>
                     <td className="px-6 py-4">
-                      {isLow ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          Menipis
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Aman
-                        </span>
-                      )}
+                      {statusBadge}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{stock.lastUpdate}</td>
                     {userRole === 'admin' && (

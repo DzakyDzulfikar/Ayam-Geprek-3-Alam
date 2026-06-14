@@ -29,6 +29,8 @@ export function DashboardMain() {
     total_revenue: 0,
     todays_portions: 0,
     low_stock_count: 0,
+    warning_stock_count: 0,
+    safe_stock_count: 0,
     top_menu: 'Ayam Geprek Original',
     top_menu_sold: 0
   });
@@ -48,6 +50,8 @@ export function DashboardMain() {
         total_revenue: data.total_revenue,
         todays_portions: data.todays_portions,
         low_stock_count: data.low_stock_count,
+        warning_stock_count: data.warning_stock_count,
+        safe_stock_count: data.safe_stock_count,
         top_menu: data.top_menu,
         top_menu_sold: data.top_menu_sold
       });
@@ -166,9 +170,16 @@ export function DashboardMain() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                 {metrics.low_stock_count} Item Menipis
               </h3>
-              <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
-                <AlertTriangle className="w-4 h-4" />
-                <span className="text-sm">Bahan baku menipis</span>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50">
+                  🔴 {metrics.low_stock_count} Menipis
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-900/50">
+                  🟡 {metrics.warning_stock_count} Peringatan
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50">
+                  🟢 {metrics.safe_stock_count} Aman
+                </span>
               </div>
             </div>
             <div className="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-lg flex items-center justify-center">
