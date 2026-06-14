@@ -372,14 +372,30 @@ def get_recommendations(request):
                 rec_type = 'urgent' if sp['status'] == 'KRITIS' else 'high'
                 needed_text = sp['recommendation'].replace('Butuh ', '')
                 
+                days_left = sp.get('days_left', 7.0)
+                avg_usage = sp.get('avg_usage', 0.0)
+                min_limit = sp.get('min_limit', 0.0)
+                
+                if days_left < 7:
+                    desc = (
+                        f"Stok {sp['item']} saat ini ({sp['current']} {sp['satuan']}) diprediksi "
+                        f"akan habis dalam {days_left} hari ke depan karena rata-rata penggunaan harian mencapai "
+                        f"{avg_usage} {sp['satuan']}/hari. Batas minimum stok adalah {min_limit} {sp['satuan']}."
+                    )
+                else:
+                    desc = (
+                        f"Stok {sp['item']} saat ini ({sp['current']} {sp['satuan']}) diprediksi "
+                        f"aman namun berada di bawah batas minimum {min_limit} {sp['satuan']}."
+                    )
+                
                 recommendations.append({
                     'id': rec_id,
                     'type': rec_type,
                     'category': 'stock',
                     'title': f"Restok {sp['item']} Segera",
-                    'description': f"Stok {sp['item']} saat ini ({sp['current']} {sp['satuan']}) diprediksi akan menyusut menjadi {sp['predicted']} {sp['satuan']} dalam 7 hari ke depan berdasarkan analisis prediksi penjualan AI.",
+                    'description': desc,
                     'action': f"Pesan minimal {needed_text} hari ini",
-                    'impact': "Mencegah kehabisan stok bahan baku pada menu best-seller",
+                    'impact': f"Mencegah kehabisan stok {sp['item']} untuk kelancaran operasional",
                 })
                 rec_id += 1
                 
