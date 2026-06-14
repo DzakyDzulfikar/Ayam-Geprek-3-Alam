@@ -118,12 +118,12 @@ def get_dashboard_summary(request):
         warning_stock_count = 0
         safe_stock_count = 0
         for b in all_bahan:
-            if b.stok_saat_ini <= b.stok_minimum:
-                low_stock_count += 1
-            elif b.stok_saat_ini <= b.stok_minimum * 1.5:
+            if b.stok_saat_ini >= b.stok_minimum:
+                safe_stock_count += 1
+            elif b.stok_saat_ini >= b.stok_minimum * 0.5:
                 warning_stock_count += 1
             else:
-                safe_stock_count += 1
+                low_stock_count += 1
 
         # Menu terpopuler
         top_menu_query = DetailTransaksi.objects.values('menu__nama_menu').annotate(

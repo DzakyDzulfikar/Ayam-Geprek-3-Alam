@@ -151,8 +151,8 @@ export function StockManagement() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {stocks.map((stock) => {
-                const isLow = stock.quantity <= stock.minStock;
-                const isWarning = !isLow && stock.quantity <= stock.minStock * 1.5;
+                const isLow = stock.quantity < stock.minStock * 0.5;
+                const isWarning = !isLow && stock.quantity < stock.minStock;
                 
                 let statusBadge;
                 let textClass = 'text-gray-900 dark:text-white';
