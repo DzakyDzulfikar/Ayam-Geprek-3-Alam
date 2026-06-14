@@ -52,13 +52,13 @@ class Command(BaseCommand):
         # kuning (peringatan) min < qty <= min * 1.5
         # hijau (aman) qty > min * 1.5
         bahan_list = [
-            {"nama_bahan": "Ayam", "satuan": "ekor", "stok_saat_ini": 20.0, "stok_minimum": 15.0},         # Kuning (Peringatan)
-            {"nama_bahan": "Cabai", "satuan": "kg", "stok_saat_ini": 3.5, "stok_minimum": 5.0},            # Merah (Menipis)
-            {"nama_bahan": "Cabai Keriting", "satuan": "kg", "stok_saat_ini": 7.5, "stok_minimum": 4.0},   # Hijau (Aman)
-            {"nama_bahan": "Garam", "satuan": "kg", "stok_saat_ini": 0.8, "stok_minimum": 1.0},            # Merah (Menipis)
-            {"nama_bahan": "Bawang Putih", "satuan": "kg", "stok_saat_ini": 2.6, "stok_minimum": 2.0},    # Kuning (Peringatan)
-            {"nama_bahan": "Minyak Goreng", "satuan": "liter", "stok_saat_ini": 18.0, "stok_minimum": 10.0},# Hijau (Aman)
-            {"nama_bahan": "Tepung Bumbu", "satuan": "kg", "stok_saat_ini": 12.0, "stok_minimum": 10.0},   # Kuning (Peringatan)
+            {"nama_bahan": "Ayam", "satuan": "ekor", "stok_saat_ini": 20, "stok_minimum": 15},         # Kuning (Peringatan)
+            {"nama_bahan": "Cabai", "satuan": "kg", "stok_saat_ini": 4, "stok_minimum": 5},            # Merah (Menipis)
+            {"nama_bahan": "Cabai Keriting", "satuan": "kg", "stok_saat_ini": 8, "stok_minimum": 4},   # Hijau (Aman)
+            {"nama_bahan": "Garam", "satuan": "kg", "stok_saat_ini": 1, "stok_minimum": 1},            # Merah (Menipis)
+            {"nama_bahan": "Bawang Putih", "satuan": "kg", "stok_saat_ini": 3, "stok_minimum": 2},    # Kuning (Peringatan)
+            {"nama_bahan": "Minyak Goreng", "satuan": "liter", "stok_saat_ini": 18, "stok_minimum": 10},# Hijau (Aman)
+            {"nama_bahan": "Tepung Bumbu", "satuan": "kg", "stok_saat_ini": 12, "stok_minimum": 10},   # Kuning (Peringatan)
         ]
         bahan_db = {}
         for b in bahan_list:

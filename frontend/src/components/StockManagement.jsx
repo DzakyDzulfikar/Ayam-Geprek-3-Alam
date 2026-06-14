@@ -17,8 +17,8 @@ export function StockManagement() {
         id: item.id,
         name: item.nama_bahan,
         unit: item.satuan,
-        quantity: item.stok_saat_ini,
-        minStock: item.stok_minimum,
+        quantity: item.stok_saat_ini !== undefined && item.stok_saat_ini !== null ? Math.round(item.stok_saat_ini) : 0,
+        minStock: item.stok_minimum !== undefined && item.stok_minimum !== null ? Math.round(item.stok_minimum) : 0,
         lastUpdate: new Date(item.terakhir_diupdate).toISOString().split('T')[0],
       }));
       setStocks(mapped);
