@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Brain, TrendingUp, AlertCircle, Loader2, BookOpen, Info, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { Calendar, Brain, TrendingUp, AlertCircle, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useTheme } from '../contexts/ThemeContext';
 import API from '../services/api';
@@ -18,7 +18,6 @@ export function PredictionAI() {
   const [metrics, setMetrics] = useState(null);
   const [aiInsight, setAiInsight] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
 
   const handlePredict = async () => {
     setLoading(true);
@@ -234,89 +233,7 @@ export function PredictionAI() {
                   connectNulls
                 />
               </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Panduan Penjelasan Sidang Skripsi (Cheat Sheet) */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors duration-300">
-            <button
-              onClick={() => setShowGuide(!showGuide)}
-              className="w-full p-6 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100/50 dark:hover:bg-gray-700/80 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <BookOpen className="w-6 h-6 text-orange-500" />
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Panduan Penjelasan Sidang Skripsi (AI Cheat Sheet)</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Gunakan panduan ini untuk menjelaskan rumus regresi dan metrik evaluasi model Anda ke dosen penguji</p>
-                </div>
-              </div>
-              {showGuide ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-            </button>
-
-            {showGuide && (
-              <div className="p-6 space-y-6 text-gray-700 dark:text-gray-300 text-sm leading-relaxed border-t border-gray-100 dark:border-gray-700">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left Column: Equation */}
-                  <div className="space-y-4 bg-orange-50/30 dark:bg-orange-900/10 p-5 rounded-xl border border-orange-100/50 dark:border-orange-900/20">
-                    <div className="flex items-center gap-2 font-bold text-orange-600 dark:text-orange-400 mb-2">
-                      <Calculator className="w-5 h-5" />
-                      <h4>1. Rumus Persamaan Regresi Linear</h4>
-                    </div>
-                    <p>Model menggunakan metode <strong>Regresi Linear Sederhana (OLS - Ordinary Least Squares)</strong> untuk meramalkan permintaan berdasarkan tren waktu.</p>
-                    
-                    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-center my-3 shadow-inner">
-                      <div className="text-xs text-gray-400 mb-1">Rumus Teoritis:</div>
-                      <div className="text-lg font-bold text-gray-800 dark:text-gray-100">Y = mX + c</div>
-                      
-                      <div className="w-full border-t border-gray-100 dark:border-gray-800 my-2"></div>
-                      
-                      <div className="text-xs text-gray-400 mb-1">Rumus Hasil Training Model Anda:</div>
-                      <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                        Y = {metrics?.slope !== undefined ? (metrics.slope >= 0 ? `+${metrics.slope}` : `${metrics.slope}`) : '+0.05'}X + {metrics?.intercept ?? '60.2'}
-                      </div>
-                    </div>
-
-                    <ul className="space-y-2.5 list-disc pl-5 text-xs text-gray-600 dark:text-gray-400">
-                      <li><strong>Y (Variabel Dependen):</strong> Jumlah porsi ayam geprek yang diprediksi akan terjual pada hari ke-X.</li>
-                      <li><strong>X (Variabel Independen):</strong> Indeks hari (dihitung berurutan sejak hari pertama data training).</li>
-                      <li><strong>Slope/Kemiringan (m = {metrics?.slope ?? '0.05'}):</strong> Menunjukkan tren kenaikan penjualan harian. Nilai positif sebesar <strong>{metrics?.slope ?? '0.05'}</strong> berarti penjualan ayam diprediksi cenderung meningkat rata-rata {metrics?.slope ?? '0.05'} porsi setiap harinya.</li>
-                      <li><strong>Intercept/Konstanta (c = {metrics?.intercept ?? '60.2'}):</strong> Penjualan teoritis di awal periode data (hari ke-0), yaitu sekitar <strong>{Math.round(metrics?.intercept ?? 60)} porsi</strong>.</li>
-                    </ul>
-                  </div>
-
-                  {/* Right Column: Metrics */}
-                  <div className="space-y-5">
-                    <div className="flex items-center gap-2 font-bold text-blue-600 dark:text-blue-400">
-                      <Info className="w-5 h-5" />
-                      <h4>2. Arti Metrik Evaluasi Model</h4>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <h5 className="font-bold text-gray-900 dark:text-white">Akurasi Model ({metrics?.accuracy ?? '92.5'}%) & MAPE ({metrics?.mape ?? '7.5'}%)</h5>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          <strong>MAPE (Mean Absolute Percentage Error)</strong> menghitung rata-rata selisih kesalahan persentase antara data aktual dengan prediksi. Rata-rata persentase deviasi prediksi Anda adalah <strong>{metrics?.mape ?? '7.5'}%</strong>, sehingga tingkat akurasinya 100% - {metrics?.mape ?? '7.5'}% = <strong>{metrics?.accuracy ?? '92.5'}%</strong>. Nilai akurasi di atas 90% dikategorikan sebagai model peramalan dengan akurasi <strong>Sangat Baik (Highly Accurate)</strong>.
-                        </p>
-                      </div>
-
-                      <div className="border-t border-gray-100 dark:border-gray-700/50 pt-3">
-                        <h5 className="font-bold text-gray-900 dark:text-white">RMSE (Root Mean Square Error = {metrics?.rmse ?? '18.2'})</h5>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          RMSE mengukur standar deviasi residu ramalan. Nilai <strong>{metrics?.rmse ?? '18.2'}</strong> menunjukkan bahwa rata-rata selisih hasil prediksi model meleset sekitar <strong>{metrics?.rmse ?? '18.2'} porsi</strong> dari data penjualan riil. Semakin mendekati nol nilai RMSE, maka model ramalan semakin akurat.
-                        </p>
-                      </div>
-
-                      <div className="border-t border-gray-100 dark:border-gray-700/50 pt-3">
-                        <h5 className="font-bold text-gray-900 dark:text-white">Tingkat Kepercayaan / R-squared (R² = {metrics?.r2 ?? '91.2'}%)</h5>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          R-squared (Koefisien Determinasi) mengukur seberapa besar pola naik-turun penjualan ($Y$) dapat diterangkan oleh variabel waktu/hari ($X$). Nilai <strong>{metrics?.r2 ?? '91.2'}%</strong> menjelaskan waktu menyumbang kontribusi sebesar {metrics?.r2 ?? '91.2'}% terhadap tren penjualan, sedangkan sisa {(100 - (metrics?.r2 ?? 91.2)).toFixed(1)}% dipengaruhi oleh variabel eksternal yang tidak diteliti (misal: cuaca, event libur, stok bahan baku habis, promosi pesaing).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+             </ResponsiveContainer>
           </div>
 
           {/* Stock Prediction Table */}

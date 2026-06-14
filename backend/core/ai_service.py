@@ -302,8 +302,8 @@ def predict_sales_and_stock(days_to_predict=7):
         
         stock_predictions.append({
             "item": bahan.nama_bahan,
-            "current": round(float(bahan.stok_saat_ini), 1),
-            "predicted": round(float(predicted_remaining), 1),
+            "current": int(round(float(bahan.stok_saat_ini))),
+            "predicted": int(round(float(predicted_remaining))),
             "recommendation": recommendation,
             "satuan": bahan.satuan,
             "status": status,
