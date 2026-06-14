@@ -312,11 +312,38 @@ def predict_sales_and_stock(days_to_predict=7):
             "min_limit": round(float(bahan.stok_minimum), 1)
         })
         
-    # 6. Menghasilkan Teks Rekomendasi
+    # 6. Menghasilkan Teks Rekomendasi yang Informatif
+    kritis_items = [sp['item'] for sp in stock_predictions if sp['status'] == 'KRITIS']
+    peringatan_items = [sp['item'] for sp in stock_predictions if sp['status'] == 'PERINGATAN']
+    
+    tren_arah = "meningkat" if slope >= 0 else "menurun"
+    perubahan_harian = abs(round(float(slope), 2))
+    
+    avg_pred_porsi = round(float(total_estimasi_stok_diperlukan / days_to_predict), 1) if days_to_predict > 0 else 0
+    
     rekomendasi = (
-        f"Berdasarkan tren penjualan historis, Anda diproyeksikan akan menjual sekitar {total_estimasi_stok_diperlukan} porsi "
-        f"dalam {days_to_predict} hari ke depan. Disarankan untuk segera melakukan restok bahan baku penting sesuai rincian di bawah."
+        f"Berdasarkan analisis regresi linear terhadap data historis, tren penjualan Anda diproyeksikan akan {tren_arah} "
+        f"sebesar {perubahan_harian} porsi per hari. Dalam {days_to_predict} hari ke depan, total estimasi permintaan mencapai "
+        f"sekitar {total_estimasi_stok_diperlukan} porsi (rata-rata {avg_pred_porsi} porsi/hari). "
     )
+    
+    if kritis_items:
+        rekomendasi += (
+            f"Perhatian: Stok untuk bahan baku {', '.join(kritis_items)} berada pada tingkat KRITIS "
+            f"karena stok saat ini tidak mencukupi kebutuhan harian atau berada di bawah batas minimum keamanan. Anda disarankan segera melakukan restok hari ini. "
+        )
+        
+    if peringatan_items:
+        rekomendasi += (
+            f"Selain itu, bahan baku {', '.join(peringatan_items)} berada dalam status PERINGATAN "
+            f"dan diproyeksikan akan menipis dalam 3-7 hari ke depan. Jadwalkan pembelian untuk mencegah kehabisan stok. "
+        )
+        
+    if not kritis_items and not peringatan_items:
+        rekomendasi += (
+            "Status seluruh bahan baku utama Anda saat ini berada dalam kondisi AMAN dan mencukupi kebutuhan operasional "
+            "untuk 7 hari ke depan."
+        )
     
     return {
         "status": "success",
