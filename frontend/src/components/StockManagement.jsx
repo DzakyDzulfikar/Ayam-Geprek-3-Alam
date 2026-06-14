@@ -95,7 +95,7 @@ export function StockManagement() {
   };
 
   const getLowStockCount = () => {
-    return stocks.filter((stock) => stock.quantity < stock.minStock).length;
+    return stocks.filter((stock) => stock.quantity < stock.minStock * 0.5).length;
   };
 
   return (
