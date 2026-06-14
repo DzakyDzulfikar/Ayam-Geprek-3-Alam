@@ -19,10 +19,7 @@ def predict_sales_and_stock(days_to_predict=7):
     Jika tidak terinstal (PythonAnywhere), model menggunakan perhitungan manual Least Squares.
     """
     # 1. Mengambil data dari Database
-    APPROVED_MENUS = ["Paket Ayam Geprek", "Dada", "Paha Atas", "Paha Bawah", "Sayap"]
-    qs = DetailTransaksi.objects.filter(
-        menu__nama_menu__in=APPROVED_MENUS
-    ).annotate(
+    qs = DetailTransaksi.objects.annotate(
         tanggal=TruncDate('transaksi__tanggal_transaksi')
     ).values('tanggal').annotate(
         penjualan_ayam=Sum('kuantitas')
@@ -119,10 +116,9 @@ def predict_sales_and_stock(days_to_predict=7):
             total_estimasi_stok_diperlukan += estimasi
         
     # 5. Kalkulasi Prediksi Bahan Baku berdasarkan Resep di database
-    ALLOWED_BAHAN = ["Ayam", "Cabai", "Cabai Keriting", "Garam", "Bawang Putih", "Minyak Goreng", "Tepung Bumbu"]
     stock_predictions = []
-    for bahan in BahanBaku.objects.filter(nama_bahan__in=ALLOWED_BAHAN):
-        resep_items = Resep.objects.filter(bahan_baku=bahan).filter(menu__nama_menu__in=APPROVED_MENUS)
+    for bahan in BahanBaku.objects.all():
+        resep_items = Resep.objects.filter(bahan_baku=bahan)
         if resep_items.exists():
             usage_per_porsi = sum(r.jumlah_dibutuhkan for r in resep_items) / resep_items.count()
         else:
