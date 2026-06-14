@@ -317,9 +317,9 @@ def predict_sales_and_stock(days_to_predict=7):
     peringatan_items = [sp['item'] for sp in stock_predictions if sp['status'] == 'PERINGATAN']
     
     tren_arah = "meningkat" if slope >= 0 else "menurun"
-    perubahan_harian = abs(round(float(slope), 2))
+    perubahan_harian = int(round(abs(float(slope))))
     
-    avg_pred_porsi = round(float(total_estimasi_stok_diperlukan / days_to_predict), 1) if days_to_predict > 0 else 0
+    avg_pred_porsi = int(round(float(total_estimasi_stok_diperlukan / days_to_predict))) if days_to_predict > 0 else 0
     
     rekomendasi = (
         f"Berdasarkan analisis regresi linear terhadap data historis, tren penjualan Anda diproyeksikan akan {tren_arah} "
