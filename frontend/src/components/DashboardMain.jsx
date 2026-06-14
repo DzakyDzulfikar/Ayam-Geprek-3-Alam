@@ -8,10 +8,11 @@ import {
   Loader2,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,6 +26,7 @@ export function DashboardMain() {
   const { theme } = useTheme();
 
   const [loading, setLoading] = useState(true);
+  const [hoveredBarIndex, setHoveredBarIndex] = useState(-1);
   const [metrics, setMetrics] = useState({
     total_revenue: 0,
     todays_portions: 0,
@@ -73,6 +75,38 @@ export function DashboardMain() {
     }).format(value);
   };
 
+  const CustomSalesTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3.5 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Hari: {data.day}</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+            <span className="text-xs font-bold text-gray-900 dark:text-white">Omzet: {formatCurrency(data.penjualan)}</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomBarTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3.5 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{data.name}</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
+            <span className="text-xs font-bold text-gray-900 dark:text-white">Terjual: {data.sold} Porsi</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -88,7 +122,7 @@ export function DashboardMain() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Dashboard Operasional
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-650 dark:text-gray-400">
           Selamat datang di sistem AI Ayam Geprek 3 Alam
         </p>
       </div>
@@ -192,15 +226,22 @@ export function DashboardMain() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trend */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Tren Penjualan Mingguan
+            Tren Penjualan Mingguan (Omzet)
           </h3>
           <ResponsiveContainer width="100%" height={340}>
-            <LineChart
+            <AreaChart
               data={salesData}
               margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
             >
+              <defs>
+                <linearGradient id="colorDashboardSales" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="#f97316" stopOpacity={0.01}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#f0f0f0"
@@ -217,31 +258,24 @@ export function DashboardMain() {
                 tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1).replace('.0', '')}jt` : (value >= 1000 ? `${(value / 1000).toFixed(0)}rb` : value)}
                 tick={{ className: "dark:fill-gray-400" }}
               />
-              <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                contentStyle={{
-                  backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                  borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
-                  color: theme === "dark" ? "#f3f4f6" : "#111827",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                }}
-                itemStyle={{ color: "#f97316" }}
-              />
-              <Line
+              <Tooltip content={<CustomSalesTooltip />} />
+              <Area
                 type="monotone"
                 dataKey="penjualan"
                 stroke="#f97316"
                 strokeWidth={3}
-                dot={{ fill: "#f97316", r: 5 }}
-                activeDot={{ r: 7 }}
+                fillOpacity={1}
+                fill="url(#colorDashboardSales)"
+                dot={{ fill: "#ffffff", stroke: "#f97316", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 7, strokeWidth: 0, fill: "#f97316" }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* Top Menu */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
             Menu Terpopuler
           </h3>
@@ -250,6 +284,12 @@ export function DashboardMain() {
               data={topMenuData}
               margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
             >
+              <defs>
+                <linearGradient id="colorDashboardBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={1}/>
+                  <stop offset="95%" stopColor="#ea580c" stopOpacity={0.65}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#f0f0f0"
@@ -291,18 +331,25 @@ export function DashboardMain() {
                 stroke="#9ca3af"
                 tick={{ className: "dark:fill-gray-400" }}
               />
-              <Tooltip
-                cursor={{ fill: theme === "dark" ? "#374151" : "#f3f4f6" }}
-                contentStyle={{
-                  backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                  borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
-                  color: theme === "dark" ? "#f3f4f6" : "#111827",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                }}
-                itemStyle={{ color: "#f97316" }}
-              />
-              <Bar dataKey="sold" fill="#f97316" radius={[8, 8, 0, 0]} />
+              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === "dark" ? "#374151" : "#f3f4f6", opacity: 0.3 }} />
+              <Bar 
+                dataKey="sold" 
+                fill="url(#colorDashboardBar)" 
+                radius={[8, 8, 0, 0]}
+                onMouseEnter={(_, index) => setHoveredBarIndex(index)}
+                onMouseLeave={() => setHoveredBarIndex(-1)}
+              >
+                {topMenuData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`}
+                    style={{
+                      opacity: hoveredBarIndex === -1 || hoveredBarIndex === index ? 1 : 0.65,
+                      transition: 'opacity 0.2s ease',
+                      cursor: 'pointer'
+                    }}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

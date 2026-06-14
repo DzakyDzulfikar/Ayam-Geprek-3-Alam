@@ -10,6 +10,8 @@ export function MenuAnalytics() {
   const [sortBy, setSortBy] = useState('revenue');
   const [menuData, setMenuData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredBarIndex, setHoveredBarIndex] = useState(-1);
+  const [activePieIndex, setActivePieIndex] = useState(-1);
 
   useEffect(() => {
     fetchMenuAnalytics();
@@ -35,6 +37,9 @@ export function MenuAnalytics() {
     value: item.revenue,
   }));
 
+  const activeSlice = activePieIndex !== -1 ? pieData[activePieIndex] : null;
+  const totalTop5Revenue = pieData.reduce((sum, item) => sum + item.value, 0);
+
   const COLORS = ['#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa'];
 
   const formatCurrency = (value) => {
@@ -43,6 +48,61 @@ export function MenuAnalytics() {
       currency: 'IDR',
       minimumFractionDigits: 0,
     }).format(value);
+  };
+
+  const CustomBarTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{data.name}</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Revenue:</span>
+              <span className="text-orange-600 dark:text-orange-500 font-bold">{formatCurrency(data.revenue)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Terjual:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{data.sold} Porsi</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Margin:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{data.margin}%</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Pertumbuhan:</span>
+              <span className={`font-bold ${data.growth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-650 dark:text-red-400'}`}>
+                {data.growth >= 0 ? `+${data.growth}%` : `${data.growth}%`}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomPieTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const percent = ((data.value / (totalRevenue || 1)) * 100).toFixed(0);
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{data.name}</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Revenue:</span>
+              <span className="text-orange-600 dark:text-orange-500 font-bold">{formatCurrency(data.value)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium">Kontribusi:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{percent}% dari Top 5</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   const sortedData = [...menuData].sort((a, b) => {
@@ -166,26 +226,33 @@ export function MenuAnalytics() {
           </h3>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={sortedData.slice(0, 5)} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+              <defs>
+                <linearGradient id="colorMenuRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={1}/>
+                  <stop offset="95%" stopColor="#ea580c" stopOpacity={0.7}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12, className: 'dark:fill-gray-400'}} angle={-25} textAnchor="end" height={80} axisLine={false} tickLine={false} />
               <YAxis stroke="#6b7280" tick={{ className: 'dark:fill-gray-400' }} tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 1 : 0.4 }}
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                  borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
-                  color: theme === 'dark' ? '#f3f4f6' : '#111827',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  fontWeight: '600',
-                  padding: '12px'
-                }}
-                itemStyle={{ color: '#f97316' }}
-              />
-              <Bar dataKey="revenue" fill="#f97316" radius={[6, 6, 0, 0]} barSize={40}>
+              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} />
+              <Bar 
+                dataKey="revenue" 
+                fill="url(#colorMenuRevenue)" 
+                radius={[6, 6, 0, 0]} 
+                barSize={40}
+                onMouseEnter={(_, index) => setHoveredBarIndex(index)}
+                onMouseLeave={() => setHoveredBarIndex(-1)}
+              >
                 {sortedData.slice(0, 5).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 0 ? '#ea580c' : '#f97316'} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    style={{
+                      opacity: hoveredBarIndex === -1 || hoveredBarIndex === index ? 1 : 0.45,
+                      transition: 'opacity 0.2s ease',
+                      cursor: 'pointer'
+                    }}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -202,36 +269,56 @@ export function MenuAnalytics() {
                 data={pieData}
                 cx="50%"
                 cy="50%"
-                labelLine={true}
+                labelLine={false}
                 label={({ name, percent }) => `${name.split(' ')[2] || name.split(' ')[0]}: ${(percent * 100).toFixed(0)}%`}
                 outerRadius={110}
-                innerRadius={60}
+                innerRadius={75}
                 fill="#8884d8"
                 dataKey="value"
                 paddingAngle={3}
                 stroke="none"
+                onMouseEnter={(_, index) => setActivePieIndex(index)}
+                onMouseLeave={() => setActivePieIndex(-1)}
               >
                 {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]} 
+                    style={{
+                      opacity: activePieIndex === -1 || activePieIndex === index ? 1 : 0.5,
+                      transform: activePieIndex === index ? 'scale(1.04)' : 'scale(1)',
+                      transformOrigin: '50% 50%',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                      cursor: 'pointer'
+                    }}
+                  />
                 ))}
               </Pie>
-              <Tooltip 
-                formatter={(value) => formatCurrency(value)}
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                  borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
-                  color: theme === 'dark' ? '#f3f4f6' : '#111827',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
-                }}
-              />
+              <Tooltip content={<CustomPieTooltip />} />
             </PieChart>
           </ResponsiveContainer>
           
           {/* Centered Total Text */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%-1.5rem)] text-center pointer-events-none">
-            <span className="block text-2xl font-black text-gray-900 dark:text-white leading-none">Top 5</span>
-            <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">Menu</span>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%-1.5rem)] text-center pointer-events-none max-w-[150px] z-10">
+            {activeSlice ? (
+              <div className="animate-in fade-in zoom-in-95 duration-200">
+                <span className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 truncate uppercase tracking-wider mb-0.5">
+                  {activeSlice.name.split(' ').slice(0, 2).join(' ')}
+                </span>
+                <span className="block text-base font-black text-orange-600 dark:text-orange-500 leading-none">
+                  {formatCurrency(activeSlice.value)}
+                </span>
+                <span className="block text-[9px] font-semibold text-gray-400 dark:text-gray-500 mt-1">
+                  {((activeSlice.value / (totalRevenue || 1)) * 100).toFixed(0)}% Omzet
+                </span>
+              </div>
+            ) : (
+              <div className="animate-in fade-in duration-300">
+                <span className="block text-2xl font-black text-gray-900 dark:text-white leading-none">Top 5</span>
+                <span className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">Menu</span>
+                <span className="block text-[10px] text-gray-450 dark:text-gray-500 font-bold mt-1">{formatCurrency(totalTop5Revenue)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

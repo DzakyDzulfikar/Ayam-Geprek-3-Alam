@@ -1,11 +1,45 @@
 import { useState } from 'react';
 import { Calendar, Brain, TrendingUp, AlertCircle, Loader2 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useTheme } from '../contexts/ThemeContext';
 import API from '../services/api';
 
 export function PredictionAI() {
   const { theme } = useTheme();
+
+  const CustomPredictTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const actualVal = data.actual;
+      const predictedVal = data.predicted;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Tanggal: {data.date}</p>
+          <div className="space-y-1.5 text-xs font-semibold">
+            {actualVal !== null && (
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  <span className="text-gray-650 dark:text-gray-400 font-medium">Aktual Penjualan:</span>
+                </div>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">{actualVal} Porsi</span>
+              </div>
+            )}
+            {predictedVal !== null && (
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                  <span className="text-gray-650 dark:text-gray-400 font-medium">Proyeksi AI:</span>
+                </div>
+                <span className="text-orange-600 dark:text-orange-500 font-bold">{predictedVal} Porsi</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
   
   const todayStr = new Date().toISOString().split('T')[0];
   const nextWeekStr = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -194,45 +228,52 @@ export function PredictionAI() {
           </div>
 
           {/* Prediction Chart */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300 relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md duration-300">
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Grafik Proyeksi Permintaan & Data Historis Aktual</h3>
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={predictionData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+              <AreaChart data={predictionData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+                <defs>
+                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01}/>
+                  </linearGradient>
+                  <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.01}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
                 <XAxis dataKey="date" stroke="#9ca3af" tick={{ className: 'dark:fill-gray-400' }} axisLine={false} tickLine={false} tickMargin={12} />
                 <YAxis stroke="#9ca3af" tick={{ className: 'dark:fill-gray-400' }} axisLine={false} tickLine={false} tickMargin={12} label={{ value: 'Porsi Terjual', angle: -90, position: 'insideLeft', offset: -5, className: 'dark:fill-gray-400' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                    borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
-                    color: theme === 'dark' ? '#f3f4f6' : '#111827',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  }}
-                />
+                <Tooltip content={<CustomPredictTooltip />} />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="actual"
                   stroke="#3b82f6"
                   strokeWidth={3}
-                  dot={{ fill: '#3b82f6', r: 6, strokeWidth: 2, stroke: 'white' }}
-                  activeDot={{ r: 8, strokeWidth: 0 }}
+                  fillOpacity={1}
+                  fill="url(#colorActual)"
+                  dot={{ fill: '#ffffff', stroke: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 7, strokeWidth: 0, fill: '#3b82f6' }}
                   name="Data Historis Aktual"
                   connectNulls
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="predicted"
                   stroke="#f97316"
-                  strokeWidth={4}
+                  strokeWidth={3}
                   strokeDasharray="6 6"
-                  dot={{ fill: 'white', r: 6, strokeWidth: 3, stroke: '#f97316' }}
-                  activeDot={{ r: 8, strokeDasharray: '0', fill: '#f97316', stroke: 'none' }}
+                  fillOpacity={1}
+                  fill="url(#colorPredicted)"
+                  dot={{ fill: '#ffffff', stroke: '#f97316', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 7, strokeDasharray: '0', fill: '#f97316', stroke: 'none' }}
                   name="Hasil Prediksi AI"
                   connectNulls
                 />
-              </LineChart>
+              </AreaChart>
              </ResponsiveContainer>
           </div>
 

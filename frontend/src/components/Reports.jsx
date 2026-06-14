@@ -76,6 +76,66 @@ export function Reports() {
     }).format(value);
   };
 
+  const CustomReportRevenueTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const avgValue = data.transactions > 0 ? (data.revenue / data.transactions) : 0;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Hari: {data.day}</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between items-center gap-6">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                <span className="text-gray-900 dark:text-white font-medium">Omzet:</span>
+              </div>
+              <span className="text-orange-600 dark:text-orange-500 font-bold">{formatCurrency(data.revenue)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium pl-4">Transaksi:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{data.transactions} Trx</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium pl-4">Rerata/Trx:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{formatCurrency(avgValue)}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomReportSalesTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const avgValue = data.transactions > 0 ? (data.sales / data.transactions) : 0;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Hari: {data.day}</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between items-center gap-6">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                <span className="text-gray-900 dark:text-white font-medium">Penjualan:</span>
+              </div>
+              <span className="text-blue-600 dark:text-blue-400 font-bold">{data.sales} Porsi</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium pl-4">Transaksi:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{data.transactions} Trx</span>
+            </div>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-gray-550 dark:text-gray-400 font-medium pl-4">Rerata Porsi/Trx:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{avgValue.toFixed(1)} Porsi</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const totalRevenue = weeklyData.reduce((sum, item) => sum + item.revenue, 0);
   const totalSales = weeklyData.reduce((sum, item) => sum + item.sales, 0);
   const totalTransactions = weeklyData.reduce((sum, item) => sum + item.transactions, 0);
@@ -357,18 +417,7 @@ export function Reports() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="day" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
               <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tickFormatter={(value) => `${value / 1000000}jt`} tick={{ className: 'dark:fill-gray-400' }} />
-              <Tooltip
-                formatter={(value) => formatCurrency(value)}
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                  borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
-                  color: theme === 'dark' ? '#f3f4f6' : '#111827',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  fontWeight: '600',
-                  padding: '12px'
-                }}
-              />
+              <Tooltip content={<CustomReportRevenueTooltip />} />
               <Area
                 type="monotone"
                 dataKey="revenue"
@@ -399,17 +448,7 @@ export function Reports() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="day" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
               <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                  borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
-                  color: theme === 'dark' ? '#f3f4f6' : '#111827',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  fontWeight: '600',
-                  padding: '12px'
-                }}
-              />
+              <Tooltip content={<CustomReportSalesTooltip />} />
               <Area
                 type="monotone"
                 dataKey="sales"
