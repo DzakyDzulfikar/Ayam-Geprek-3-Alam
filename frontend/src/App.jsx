@@ -73,7 +73,9 @@ function LoginHandler() {
 
     const handleLogin = (user) => {
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userRole', user.role); // 'admin' atau 'karyawan'
+      // Map 'kasir' from backend to 'karyawan' for frontend compatibility
+      const mappedRole = user.role === 'kasir' ? 'karyawan' : user.role;
+      localStorage.setItem('userRole', mappedRole);
       navigate('/dashboard');
     }
 
