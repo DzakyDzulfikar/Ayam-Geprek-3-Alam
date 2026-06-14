@@ -32,9 +32,22 @@ export function StockManagement() {
   const [formData, setFormData] = useState({
     name: '',
     unit: 'kg',
-    quantity: 0,
-    minStock: 0,
+    quantity: '',
+    minStock: '',
   });
+
+  const cleanInteger = (val) => {
+    if (val === '') return '';
+    // Replace comma with dot to handle both decimal separators
+    let normalized = val.replace(',', '.');
+    // Parse as float first
+    let parsedFloat = parseFloat(normalized);
+    if (isNaN(parsedFloat)) return '';
+    // Discard decimal part
+    let parsedInt = Math.floor(parsedFloat);
+    if (parsedInt < 0) parsedInt = 0;
+    return parsedInt.toString();
+  };
 
   const handleOpenModal = (stock = null) => {
     if (stock) {
@@ -42,12 +55,12 @@ export function StockManagement() {
       setFormData({
         name: stock.name,
         unit: stock.unit,
-        quantity: stock.quantity,
-        minStock: stock.minStock,
+        quantity: stock.quantity !== undefined && stock.quantity !== null ? String(Math.round(stock.quantity)) : '',
+        minStock: stock.minStock !== undefined && stock.minStock !== null ? String(Math.round(stock.minStock)) : '',
       });
     } else {
       setEditingStock(null);
-      setFormData({ name: '', unit: 'kg', quantity: 0, minStock: 0 });
+      setFormData({ name: '', unit: 'kg', quantity: '', minStock: '' });
     }
     setIsModalOpen(true);
   };
@@ -55,7 +68,7 @@ export function StockManagement() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingStock(null);
-    setFormData({ name: '', unit: 'kg', quantity: 0, minStock: 0 });
+    setFormData({ name: '', unit: 'kg', quantity: '', minStock: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -64,8 +77,8 @@ export function StockManagement() {
     const payload = {
       nama_bahan: formData.name,
       satuan: formData.unit,
-      stok_saat_ini: parseFloat(formData.quantity) || 0,
-      stok_minimum: parseFloat(formData.minStock) || 0,
+      stok_saat_ini: parseInt(formData.quantity, 10) || 0,
+      stok_minimum: parseInt(formData.minStock, 10) || 0,
     };
 
     try {
@@ -261,8 +274,8 @@ export function StockManagement() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jumlah Tersedia</label>
                   <input
                     type="number"
-                    value={formData.quantity === '' ? '' : Number(formData.quantity).toString()}
-                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: cleanInteger(e.target.value) })}
                     className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
                     min="0"
                     step="1"
@@ -274,8 +287,8 @@ export function StockManagement() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Batas Stok Minimum (Peringatan)</label>
                 <input
                   type="number"
-                  value={formData.minStock === '' ? '' : Number(formData.minStock).toString()}
-                  onChange={(e) => setFormData({ ...formData, minStock: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                  value={formData.minStock}
+                  onChange={(e) => setFormData({ ...formData, minStock: cleanInteger(e.target.value) })}
                   className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
                   min="0"
                   step="1"
