@@ -300,6 +300,7 @@ def get_menu_analytics(request):
 def get_report_data(request):
     """
     Mengelompokkan transaksi harian dan menghitung akumulasi per hari
+    serta rincian penjualan per menu (menu breakdown).
     """
     start_date_str = request.query_params.get('start_date')
     end_date_str = request.query_params.get('end_date')
@@ -351,8 +352,58 @@ def get_report_data(request):
             'transactions': stats['transactions']
         })
         curr += timedelta(days=1)
+
+    # Hitung rincian per menu (menu breakdown)
+    menu_stats = defaultdict(lambda: {'nama_menu': '', 'total_sold': 0, 'total_revenue': 0.0})
+    
+    # Ambil semua menu aktif untuk mempopulasi nama menu
+    all_menus = {menu.id: menu.nama_menu for menu in Menu.objects.filter(is_active=True)}
+    for menu_id, name in all_menus.items():
+        menu_stats[menu_id]['nama_menu'] = name
         
-    return Response(data_list, status=status.HTTP_200_OK)
+    total_period_sales = 0
+    total_period_revenue = 0.0
+    
+    for detail in details:
+        menu_id = detail.menu_id
+        if menu_id not in menu_stats:
+            menu_stats[menu_id]['nama_menu'] = detail.menu.nama_menu
+            
+        qty = detail.kuantitas
+        sub = float(detail.subtotal)
+        
+        menu_stats[menu_id]['total_sold'] += qty
+        menu_stats[menu_id]['total_revenue'] += sub
+        total_period_sales += qty
+        total_period_revenue += sub
+        
+    menu_breakdown = []
+    for menu_id, stats in menu_stats.items():
+        sold = stats['total_sold']
+        rev = stats['total_revenue']
+        
+        # Persentase dibulatkan ke bilangan bulat (integer) sesuai standar
+        pct_sales = int(round(sold / total_period_sales * 100)) if total_period_sales > 0 else 0
+        pct_revenue = int(round(rev / total_period_revenue * 100)) if total_period_revenue > 0 else 0
+        
+        if menu_id in all_menus or sold > 0:
+            menu_breakdown.append({
+                'menu_id': menu_id,
+                'nama_menu': stats['nama_menu'],
+                'total_sold': int(sold),
+                'total_revenue': int(round(rev)),
+                'pct_sales': pct_sales,
+                'pct_revenue': pct_revenue
+            })
+            
+    # Urutkan berdasarkan porsi terjual terbanyak
+    menu_breakdown.sort(key=lambda x: x['total_sold'], reverse=True)
+        
+    return Response({
+        "daily_stats": data_list,
+        "menu_breakdown": menu_breakdown
+    }, status=status.HTTP_200_OK)
+
 
 
 @api_view(['GET'])
