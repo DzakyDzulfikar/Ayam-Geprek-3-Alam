@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Plus, Trash2, ShoppingCart, Loader2 } from 'lucide-react';
 import API from '../services/api';
 
 export function SalesInput() {
@@ -7,6 +7,8 @@ export function SalesInput() {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
+  const [checkoutStatus, setCheckoutStatus] = useState(null); // 'loading', 'success', 'error', null
+  const [checkoutDetails, setCheckoutDetails] = useState({ total: 0, message: '' });
 
   useEffect(() => {
     fetchMenuItems();
@@ -58,6 +60,10 @@ export function SalesInput() {
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     
+    const totalOrder = calculateTotal();
+    setCheckoutDetails({ total: totalOrder, message: '' });
+    setCheckoutStatus('loading');
+    
     const details = cart.map(item => {
       const matched = menuItems.find(m => m.name === item.menu);
       return {
@@ -71,14 +77,17 @@ export function SalesInput() {
         details: details
       });
       if (response.status === 201) {
-        alert(`Transaksi berhasil! Total: ${formatCurrency(calculateTotal())}`);
+        setCheckoutStatus('success');
         setCart([]);
       } else {
-        alert('Gagal memproses transaksi.');
+        setCheckoutDetails({ total: totalOrder, message: 'Gagal memproses transaksi.' });
+        setCheckoutStatus('error');
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      alert(err.response?.data?.error || 'Gagal menyimpan transaksi ke backend');
+      const errMsg = err.response?.data?.error || 'Gagal menyimpan transaksi ke backend';
+      setCheckoutDetails({ total: totalOrder, message: errMsg });
+      setCheckoutStatus('error');
     }
   };
 
@@ -219,6 +228,83 @@ export function SalesInput() {
           )}
         </div>
       </div>
+
+      {/* Premium Receipt Modal Overlay */}
+      {checkoutStatus && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-gray-100 dark:border-gray-700 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center transition-colors">
+            
+            {checkoutStatus === 'loading' && (
+              <div className="py-6 flex flex-col items-center">
+                <Loader2 className="w-16 h-16 text-orange-500 animate-spin mb-4" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Memproses Transaksi</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Menyimpan data penjualan ke database...</p>
+              </div>
+            )}
+
+            {checkoutStatus === 'success' && (
+              <div className="w-full">
+                {/* Animated checkmark circle */}
+                <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 text-green-500 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-5 border border-green-100 dark:border-green-900/40 relative">
+                  <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping"></div>
+                  <svg className="w-10 h-10 animate-in zoom-in-75 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Transaksi Berhasil!</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Stok bahan baku telah otomatis disesuaikan</p>
+                
+                {/* Receipt Card */}
+                <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700 rounded-xl p-4 mb-6 text-left space-y-2.5 font-sans shadow-inner text-sm">
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>Waktu</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{new Date().toLocaleTimeString('id-ID')} WIB</span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>Status</span>
+                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Lunas</span>
+                  </div>
+                  <div className="w-full border-t border-dashed border-gray-200 dark:border-gray-700 my-2"></div>
+                  <div className="flex justify-between items-center text-gray-700 dark:text-gray-300 font-bold">
+                    <span>Total Bayar</span>
+                    <span className="text-orange-600 dark:text-orange-500 text-base">{formatCurrency(checkoutDetails.total)}</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setCheckoutStatus(null)}
+                  className="w-full bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white py-3 rounded-lg font-bold transition-all shadow-md shadow-green-600/10"
+                >
+                  Tutup
+                </button>
+              </div>
+            )}
+
+            {checkoutStatus === 'error' && (
+              <div className="w-full">
+                <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-5 border border-red-100 dark:border-red-900/40 relative">
+                  <div className="absolute inset-0 rounded-full bg-red-500/10 animate-ping"></div>
+                  <svg className="w-10 h-10 animate-in zoom-in-75 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Transaksi Gagal</h3>
+                <p className="text-red-500 dark:text-red-400 text-sm mb-6 px-2 break-words leading-normal">{checkoutDetails.message}</p>
+                
+                <button
+                  onClick={() => setCheckoutStatus(null)}
+                  className="w-full bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white py-3 rounded-lg font-bold transition-all shadow-md"
+                >
+                  Coba Lagi
+                </button>
+              </div>
+            )}
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 }
