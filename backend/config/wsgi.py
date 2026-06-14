@@ -38,13 +38,16 @@ try:
         with open(os.path.join(project_dir, 'git_pull_trigger.log'), 'w') as f:
             f.write(f"STDOUT:\n{result_pull.stdout}\nSTDERR:\n{result_pull.stderr}")
             
-        # 2. Run Django seed_data to reset and seed the database
-        from django.core.management import call_command
-        call_command('seed_data')
-        
-        # Write seed logs
-        with open(os.path.join(project_dir, 'seed_data_trigger.log'), 'w') as f:
-            f.write(f"Successfully seeded database on reload at {django.utils.timezone.now()}")
+        # 2. Run Django seed_data only ONCE (using a lock file) to preserve custom edits
+        lock_file = os.path.join(project_dir, 'seeding_done.lock')
+        if not os.path.exists(lock_file):
+            from django.core.management import call_command
+            call_command('seed_data')
+            with open(lock_file, 'w') as f:
+                f.write(f"Successfully seeded database on reload at {django.utils.timezone.now()}")
+        else:
+            with open(os.path.join(project_dir, 'seed_data_trigger.log'), 'w') as f:
+                f.write(f"Skipped seeding because lock file exists (edits preserved) at {django.utils.timezone.now()}")
 except Exception as e:
     project_dir = '/home/ayamgeprek3alam/Ayam-Geprek-3-Alam'
     if os.path.exists(project_dir):
