@@ -166,9 +166,9 @@ def get_dashboard_summary(request):
                 "penjualan": float(day_sales)
             })
             
-        # Transaksi terbaru (5 data terakhir)
+        # Transaksi terbaru (5 data terakhir dari hari ini saja)
         recent_txs = []
-        for tx in TransaksiPenjualan.objects.all().order_by('-tanggal_transaksi')[:5]:
+        for tx in TransaksiPenjualan.objects.filter(tanggal_transaksi__date=today).order_by('-tanggal_transaksi')[:5]:
             details = tx.details.all()
             menu_names = ", ".join([f"{d.kuantitas}x {d.menu.nama_menu}" for d in details])
             kasir_name = tx.kasir.username if tx.kasir else "Karyawan"
