@@ -372,9 +372,9 @@ def get_recommendations(request):
                 rec_type = 'urgent' if sp['status'] == 'KRITIS' else 'high'
                 needed_text = sp['recommendation'].replace('Butuh ', '')
                 
-                days_left = sp.get('days_left', 7.0)
-                avg_usage = sp.get('avg_usage', 0.0)
-                min_limit = sp.get('min_limit', 0.0)
+                days_left = int(round(float(sp.get('days_left', 7.0))))
+                avg_usage = int(round(float(sp.get('avg_usage', 0.0))))
+                min_limit = int(round(float(sp.get('min_limit', 0.0))))
                 
                 if days_left < 7:
                     desc = (
