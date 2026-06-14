@@ -23,13 +23,21 @@ class BahanBakuViewSet(viewsets.ModelViewSet):
     serializer_class = BahanBakuSerializer
     permission_classes = [AllowAny]
 
+    def get_queryset(self):
+        ALLOWED_BAHAN = ["Ayam", "Cabai", "Cabai Keriting", "Garam", "Bawang Putih", "Minyak Goreng", "Tepung Bumbu"]
+        return BahanBaku.objects.filter(nama_bahan__in=ALLOWED_BAHAN)
+
 class TransaksiPenjualanViewSet(viewsets.ModelViewSet):
     """
     CRUD API endpoint untuk Transaksi Penjualan (POS)
     """
-    queryset = TransaksiPenjualan.objects.all().order_by('-tanggal_transaksi')
+    queryset = TransaksiPenjualan.objects.all()
     serializer_class = TransaksiPenjualanSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        APPROVED_MENUS = ["Paket Ayam Geprek", "Dada", "Paha Atas", "Paha Bawah", "Sayap"]
+        return TransaksiPenjualan.objects.filter(details__menu__nama_menu__in=APPROVED_MENUS).distinct().order_by('-tanggal_transaksi')
 
 class MenuViewSet(viewsets.ModelViewSet):
     """
@@ -38,6 +46,10 @@ class MenuViewSet(viewsets.ModelViewSet):
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        APPROVED_MENUS = ["Paket Ayam Geprek", "Dada", "Paha Atas", "Paha Bawah", "Sayap"]
+        return Menu.objects.filter(nama_menu__in=APPROVED_MENUS)
 
 class ResepViewSet(viewsets.ModelViewSet):
     """
@@ -92,17 +104,24 @@ def get_dashboard_summary(request):
     API endpoint untuk mengambil ringkasan data operasional untuk dashboard.
     """
     try:
-        # Hitung total pendapatan
-        total_revenue = TransaksiPenjualan.objects.aggregate(total=Sum('total_harga'))['total'] or 0
+        today = timezone.localtime(timezone.now()).date()
+        APPROVED_MENUS = ["Paket Ayam Geprek", "Dada", "Paha Atas", "Paha Bawah", "Sayap"]
+        ALLOWED_BAHAN = ["Ayam", "Cabai", "Cabai Keriting", "Garam", "Bawang Putih", "Minyak Goreng", "Tepung Bumbu"]
+        
+        # Hitung total pendapatan hari ini (hanya dari menu makanan yang disetujui)
+        total_revenue = DetailTransaksi.objects.filter(
+            transaksi__tanggal_transaksi__date=today,
+            menu__nama_menu__in=APPROVED_MENUS
+        ).aggregate(total=Sum('subtotal'))['total'] or 0
         
         # Hitung jumlah porsi terjual hari ini
-        today = timezone.localtime(timezone.now()).date()
         todays_portions = DetailTransaksi.objects.filter(
-            transaksi__tanggal_transaksi__date=today
+            transaksi__tanggal_transaksi__date=today,
+            menu__nama_menu__in=APPROVED_MENUS
         ).aggregate(total_qty=Sum('kuantitas'))['total_qty'] or 0
         
         # Hitung jumlah bahan baku berdasarkan status: merah (menipis), kuning (peringatan), hijau (aman)
-        all_bahan = BahanBaku.objects.all()
+        all_bahan = BahanBaku.objects.filter(nama_bahan__in=ALLOWED_BAHAN)
         low_stock_count = 0
         warning_stock_count = 0
         safe_stock_count = 0
@@ -115,9 +134,11 @@ def get_dashboard_summary(request):
                 safe_stock_count += 1
 
         # Menu terpopuler
-        top_menu_query = DetailTransaksi.objects.values('menu__nama_menu').annotate(
+        top_menu_query = DetailTransaksi.objects.filter(
+            menu__nama_menu__in=APPROVED_MENUS
+        ).values('menu__nama_menu').annotate(
             total_sold=Sum('kuantitas')
-        ).order_by('-total_sold')[:4]
+        ).order_by('-total_sold')[:5]
         
         top_menu_data = [
             {"name": item['menu__nama_menu'], "sold": item['total_sold']}
@@ -143,26 +164,33 @@ def get_dashboard_summary(request):
             day_idx = target_date.weekday()
             day_name = days_short[day_idx]
             
-            day_sales = TransaksiPenjualan.objects.filter(
-                tanggal_transaksi__date=target_date
-            ).aggregate(total=Sum('total_harga'))['total'] or 0
+            day_sales = DetailTransaksi.objects.filter(
+                transaksi__tanggal_transaksi__date=target_date,
+                menu__nama_menu__in=APPROVED_MENUS
+            ).aggregate(total=Sum('subtotal'))['total'] or 0
             
             sales_weekly.append({
                 "day": day_name,
                 "penjualan": float(day_sales)
             })
             
-        # Transaksi terbaru (5 data terakhir)
+        # Transaksi terbaru (5 data terakhir yang memiliki menu makanan yang disetujui)
         recent_txs = []
-        for tx in TransaksiPenjualan.objects.all().order_by('-tanggal_transaksi')[:5]:
-            details = tx.details.all()
+        tx_queryset = TransaksiPenjualan.objects.filter(
+            details__menu__nama_menu__in=APPROVED_MENUS
+        ).distinct().order_by('-tanggal_transaksi')[:5]
+        
+        for tx in tx_queryset:
+            details = tx.details.filter(menu__nama_menu__in=APPROVED_MENUS)
             menu_names = ", ".join([f"{d.kuantitas}x {d.menu.nama_menu}" for d in details])
+            kasir_name = tx.kasir.username if tx.kasir else "Karyawan"
             recent_txs.append({
                 "id": f"TRX{tx.id:03d}",
                 "menu": menu_names or "Tidak ada item",
                 "qty": sum(d.kuantitas for d in details),
-                "total": float(tx.total_harga),
-                "time": timezone.localtime(tx.tanggal_transaksi).strftime("%H:%M")
+                "total": float(sum(d.subtotal for d in details)),
+                "time": timezone.localtime(tx.tanggal_transaksi).strftime("%H:%M"),
+                "kasir": kasir_name
             })
 
         return Response({
@@ -297,26 +325,30 @@ def get_report_data(request):
     except ValueError:
         return Response({"error": "Invalid date format, use YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
         
-    txs = TransaksiPenjualan.objects.filter(tanggal_transaksi__date__range=[start_date, end_date])
+    APPROVED_MENUS = ["Paket Ayam Geprek", "Dada", "Paha Atas", "Paha Bawah", "Sayap"]
+    txs = TransaksiPenjualan.objects.filter(
+        tanggal_transaksi__date__range=[start_date, end_date],
+        details__menu__nama_menu__in=APPROVED_MENUS
+    ).distinct()
     
     from collections import defaultdict
     daily_stats = defaultdict(lambda: {'sales': 0, 'revenue': 0, 'transactions': 0})
     
-    details = DetailTransaksi.objects.filter(transaksi__in=txs)
+    details = DetailTransaksi.objects.filter(transaksi__in=txs, menu__nama_menu__in=APPROVED_MENUS)
     
     tx_dates = {tx.id: timezone.localtime(tx.tanggal_transaksi).date() for tx in txs}
-    tx_totals = {tx.id: float(tx.total_harga) for tx in txs}
     
-    for tx_id, d_date in tx_dates.items():
+    for tx in txs:
+        d_date = timezone.localtime(tx.tanggal_transaksi).date()
         date_key = d_date.strftime('%Y-%m-%d')
         daily_stats[date_key]['transactions'] += 1
-        daily_stats[date_key]['revenue'] += tx_totals[tx_id]
         
     for detail in details:
         d_date = tx_dates.get(detail.transaksi_id)
         if d_date:
             date_key = d_date.strftime('%Y-%m-%d')
             daily_stats[date_key]['sales'] += detail.kuantitas
+            daily_stats[date_key]['revenue'] += float(detail.subtotal)
             
     data_list = []
     curr = start_date

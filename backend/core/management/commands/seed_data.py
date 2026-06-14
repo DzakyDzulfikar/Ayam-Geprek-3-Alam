@@ -1,11 +1,11 @@
 import random
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from core.models import CustomUser, Menu, BahanBaku, Resep, TransaksiPenjualan, DetailTransaksi
 
 class Command(BaseCommand):
-    help = 'Mengisi database awal dengan data pengujian'
+    help = 'Mengisi database awal dengan data pengujian Ayam Geprek 3 Alam'
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Mengosongkan database lama...')
@@ -44,14 +44,19 @@ class Command(BaseCommand):
             kasir_user.set_password('Karyawan')
             kasir_user.save()
 
-        self.stdout.write('Membuat bahan baku...')
+        self.stdout.write('Membuat bahan baku per hari...')
+        # setup bahan baku dengan indikator:
+        # merah (menipis) <= min
+        # kuning (peringatan) min < qty <= min * 1.5
+        # hijau (aman) qty > min * 1.5
         bahan_list = [
-            {"nama_bahan": "Daging Ayam", "satuan": "kg", "stok_saat_ini": 55.0, "stok_minimum": 20.0},
-            {"nama_bahan": "Tepung Bumbu", "satuan": "kg", "stok_saat_ini": 28.0, "stok_minimum": 10.0},
-            {"nama_bahan": "Cabai Rawit", "satuan": "kg", "stok_saat_ini": 8.0, "stok_minimum": 3.0},
-            {"nama_bahan": "Keju", "satuan": "kg", "stok_saat_ini": 15.0, "stok_minimum": 8.0},
-            {"nama_bahan": "Minyak Goreng", "satuan": "liter", "stok_saat_ini": 35.0, "stok_minimum": 15.0},
-            {"nama_bahan": "Beras", "satuan": "kg", "stok_saat_ini": 60.0, "stok_minimum": 30.0},
+            {"nama_bahan": "Ayam", "satuan": "ekor", "stok_saat_ini": 20.0, "stok_minimum": 15.0},         # Kuning (Peringatan)
+            {"nama_bahan": "Cabai", "satuan": "kg", "stok_saat_ini": 3.5, "stok_minimum": 5.0},            # Merah (Menipis)
+            {"nama_bahan": "Cabai Keriting", "satuan": "kg", "stok_saat_ini": 7.5, "stok_minimum": 4.0},   # Hijau (Aman)
+            {"nama_bahan": "Garam", "satuan": "kg", "stok_saat_ini": 0.8, "stok_minimum": 1.0},            # Merah (Menipis)
+            {"nama_bahan": "Bawang Putih", "satuan": "kg", "stok_saat_ini": 2.6, "stok_minimum": 2.0},    # Kuning (Peringatan)
+            {"nama_bahan": "Minyak Goreng", "satuan": "liter", "stok_saat_ini": 18.0, "stok_minimum": 10.0},# Hijau (Aman)
+            {"nama_bahan": "Tepung Bumbu", "satuan": "kg", "stok_saat_ini": 12.0, "stok_minimum": 10.0},   # Kuning (Peringatan)
         ]
         bahan_db = {}
         for b in bahan_list:
@@ -60,13 +65,11 @@ class Command(BaseCommand):
 
         self.stdout.write('Membuat menu makanan...')
         menu_list = [
-            {"nama_menu": "Paket Ayam Geprek", "harga": 20000.0, "deskripsi": "Paket ayam geprek lengkap dengan nasi"},
-            {"nama_menu": "Dada", "harga": 15000.0, "deskripsi": "Ayam geprek bagian dada"},
-            {"nama_menu": "Paha Atas", "harga": 15000.0, "deskripsi": "Ayam geprek bagian paha atas"},
-            {"nama_menu": "Paha Bawah", "harga": 14000.0, "deskripsi": "Ayam geprek bagian paha bawah"},
-            {"nama_menu": "Sayap", "harga": 12000.0, "deskripsi": "Ayam geprek bagian sayap"},
-            {"nama_menu": "Es Teh Manis", "harga": 5000.0, "deskripsi": "Teh es manis penyegar dahaga"},
-            {"nama_menu": "Es Jeruk", "harga": 7000.0, "deskripsi": "Es jeruk peras asli manis segar"},
+            {"nama_menu": "Paket Ayam Geprek", "harga": 17000.00, "deskripsi": "Paket nasi + ayam geprek + lalapan"},
+            {"nama_menu": "Dada", "harga": 12000.00, "deskripsi": "Ayam geprek dada saja"},
+            {"nama_menu": "Paha Atas", "harga": 12000.00, "deskripsi": "Ayam geprek paha atas saja"},
+            {"nama_menu": "Paha Bawah", "harga": 10000.00, "deskripsi": "Ayam geprek paha bawah saja"},
+            {"nama_menu": "Sayap", "harga": 9000.00, "deskripsi": "Ayam geprek sayap saja"},
         ]
         menu_db = {}
         for m in menu_list:
@@ -75,65 +78,82 @@ class Command(BaseCommand):
 
         self.stdout.write('Menghubungkan resep bahan baku ke menu...')
         resep_data = [
-            # Dada
-            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Daging Ayam"], "jumlah_dibutuhkan": 0.2},
-            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.05},
-            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Cabai Rawit"], "jumlah_dibutuhkan": 0.01},
-            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.05},
-            # Paha Atas
-            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Daging Ayam"], "jumlah_dibutuhkan": 0.2},
-            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.05},
-            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Cabai Rawit"], "jumlah_dibutuhkan": 0.01},
-            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.05},
-            # Paha Bawah
-            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Daging Ayam"], "jumlah_dibutuhkan": 0.15},
-            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.04},
-            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Cabai Rawit"], "jumlah_dibutuhkan": 0.01},
-            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.04},
-            # Sayap
-            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Daging Ayam"], "jumlah_dibutuhkan": 0.12},
-            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.03},
-            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Cabai Rawit"], "jumlah_dibutuhkan": 0.01},
-            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.03},
             # Paket Ayam Geprek
-            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Daging Ayam"], "jumlah_dibutuhkan": 0.2},
-            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.05},
-            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Cabai Rawit"], "jumlah_dibutuhkan": 0.01},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Ayam"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Cabai"], "jumlah_dibutuhkan": 0.05},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Cabai Keriting"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Garam"], "jumlah_dibutuhkan": 0.005},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Bawang Putih"], "jumlah_dibutuhkan": 0.01},
             {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.05},
-            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Beras"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Paket Ayam Geprek"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.05},
+            
+            # Dada
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Ayam"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Cabai"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Cabai Keriting"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Garam"], "jumlah_dibutuhkan": 0.003},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Bawang Putih"], "jumlah_dibutuhkan": 0.005},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Dada"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.04},
+            
+            # Paha Atas
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Ayam"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Cabai"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Cabai Keriting"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Garam"], "jumlah_dibutuhkan": 0.003},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Bawang Putih"], "jumlah_dibutuhkan": 0.005},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Paha Atas"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.04},
+            
+            # Paha Bawah
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Ayam"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Cabai"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Cabai Keriting"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Garam"], "jumlah_dibutuhkan": 0.003},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Bawang Putih"], "jumlah_dibutuhkan": 0.005},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.03},
+            {"menu": menu_db["Paha Bawah"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.03},
+            
+            # Sayap
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Ayam"], "jumlah_dibutuhkan": 0.1},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Cabai"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Cabai Keriting"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Garam"], "jumlah_dibutuhkan": 0.003},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Bawang Putih"], "jumlah_dibutuhkan": 0.004},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Minyak Goreng"], "jumlah_dibutuhkan": 0.02},
+            {"menu": menu_db["Sayap"], "bahan_baku": bahan_db["Tepung Bumbu"], "jumlah_dibutuhkan": 0.03},
         ]
         for r in resep_data:
             Resep.objects.create(**r)
 
-        self.stdout.write('Membuat data transaksi historis (30 hari ke belakang)...')
-        now = timezone.now()
+        self.stdout.write('Membuat data transaksi historis 3 bulan (90 hari)...')
+        end_date = datetime(2026, 6, 14, 21, 0, 0)
+        start_date = end_date - timedelta(days=90)
         
-        geprek_menus = [
-            menu_db["Dada"],
-            menu_db["Paha Atas"],
-            menu_db["Paha Bawah"],
-            menu_db["Sayap"],
-            menu_db["Paket Ayam Geprek"]
-        ]
+        current_date = start_date
+        tx_count = 0
+        portions_count = 0
+        total_sales_val = 0
         
-        drink_menus = [
-            menu_db["Es Teh Manis"],
-            menu_db["Es Jeruk"]
-        ]
+        geprek_menus = list(menu_db.values())
 
-        for day_ago in range(30, -1, -1):
-            date_target = now - timedelta(days=day_ago)
-            num_transactions = random.randint(8, 20)
-            
-            if date_target.weekday() in [5, 6]: # Sabtu & Minggu
-                num_transactions = random.randint(15, 30)
+        while current_date <= end_date:
+            weekday = current_date.weekday()
+            # Tentukan jumlah transaksi berdasarkan hari
+            if weekday in [5, 6]:  # Sabtu & Minggu (paling ramai)
+                num_transactions = random.randint(45, 75)
+            elif weekday in [4]:   # Jumat
+                num_transactions = random.randint(40, 60)
+            else:                  # Senin s.d Kamis
+                num_transactions = random.randint(25, 45)
 
             for _ in range(num_transactions):
-                hour = random.randint(10, 21)
+                hour = random.randint(10, 20)
                 minute = random.randint(0, 59)
                 second = random.randint(0, 59)
                 
-                tx_time = date_target.replace(hour=hour, minute=minute, second=second)
+                tx_time = current_date.replace(hour=hour, minute=minute, second=second)
+                tx_time = timezone.make_aware(tx_time, timezone.get_current_timezone())
                 
                 tx = TransaksiPenjualan.objects.create(
                     kasir=kasir_user,
@@ -147,8 +167,8 @@ class Command(BaseCommand):
                 chosen_food = random.sample(geprek_menus, items_count)
                 
                 for food in chosen_food:
-                    qty = random.randint(1, 3)
-                    subtotal = food.harga * qty
+                    qty = random.choices([1, 2, 3, 4], weights=[0.6, 0.25, 0.1, 0.05])[0]
+                    subtotal = float(food.harga) * qty
                     DetailTransaksi.objects.create(
                         transaksi=tx,
                         menu=food,
@@ -156,20 +176,16 @@ class Command(BaseCommand):
                         subtotal=subtotal
                     )
                     total_harga += subtotal
-                
-                if random.random() < 0.8:
-                    chosen_drink = random.choice(drink_menus)
-                    qty = random.randint(1, 3)
-                    subtotal = chosen_drink.harga * qty
-                    DetailTransaksi.objects.create(
-                        transaksi=tx,
-                        menu=chosen_drink,
-                        kuantitas=qty,
-                        subtotal=subtotal
-                    )
-                    total_harga += subtotal
+                    portions_count += qty
 
                 tx.total_harga = total_harga
                 tx.save()
+                total_sales_val += total_harga
+                tx_count += 1
+                
+            current_date += timedelta(days=1)
 
-        self.stdout.write(self.style.SUCCESS('Database Ayam Geprek 3 Alam berhasil di-seed!'))
+        self.stdout.write(self.style.SUCCESS(
+            f'Seeding selesai! Berhasil membuat {tx_count} transaksi, '
+            f'{portions_count} porsi terjual, total omzet Rp {total_sales_val:,.2f}'
+        ))
