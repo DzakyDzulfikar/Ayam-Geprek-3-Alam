@@ -259,7 +259,9 @@ export function SalesInput() {
                 <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700 rounded-xl p-4 mb-6 text-left space-y-2.5 font-sans shadow-inner text-sm">
                   <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
                     <span>Waktu</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{new Date().toLocaleTimeString('id-ID')} WIB</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {`${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`} WIB
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
                     <span>Status</span>
