@@ -67,11 +67,11 @@ class Command(BaseCommand):
 
         self.stdout.write('Membuat menu makanan...')
         menu_list = [
-            {"nama_menu": "Paket Ayam Geprek", "harga": 17000.00, "deskripsi": "Paket nasi + ayam geprek + lalapan"},
-            {"nama_menu": "Dada", "harga": 12000.00, "deskripsi": "Ayam geprek dada saja"},
-            {"nama_menu": "Paha Atas", "harga": 12000.00, "deskripsi": "Ayam geprek paha atas saja"},
-            {"nama_menu": "Paha Bawah", "harga": 10000.00, "deskripsi": "Ayam geprek paha bawah saja"},
-            {"nama_menu": "Sayap", "harga": 9000.00, "deskripsi": "Ayam geprek sayap saja"},
+            {"nama_menu": "Paket Ayam Geprek", "harga": 18000.00, "deskripsi": "Paket nasi + ayam geprek + lalapan"},
+            {"nama_menu": "Dada", "harga": 8000.00, "deskripsi": "Ayam geprek dada saja"},
+            {"nama_menu": "Paha Atas", "harga": 6000.00, "deskripsi": "Ayam geprek paha atas saja"},
+            {"nama_menu": "Paha Bawah", "harga": 6000.00, "deskripsi": "Ayam geprek paha bawah saja"},
+            {"nama_menu": "Sayap", "harga": 7000.00, "deskripsi": "Ayam geprek sayap saja"},
         ]
         menu_db = {}
         for m in menu_list:
@@ -133,59 +133,76 @@ class Command(BaseCommand):
         start_date = end_date - timedelta(days=90)
         
         current_date = start_date
-        tx_count = 0
         portions_count = 0
         total_sales_val = 0
+        tx_count = 0
         
         geprek_menus = list(menu_db.values())
 
-        while current_date <= end_date:
-            weekday = current_date.weekday()
-            # Tentukan jumlah transaksi berdasarkan hari
-            if weekday in [5, 6]:  # Sabtu & Minggu (paling ramai)
-                num_transactions = random.randint(45, 75)
-            elif weekday in [4]:   # Jumat
-                num_transactions = random.randint(40, 60)
-            else:                  # Senin s.d Kamis
-                num_transactions = random.randint(25, 45)
+        txs_to_create = []
+        details_by_tx_index = []
 
-            for _ in range(num_transactions):
-                hour = random.randint(10, 20)
-                minute = random.randint(0, 59)
-                second = random.randint(0, 59)
-                
-                tx_time = current_date.replace(hour=hour, minute=minute, second=second)
-                tx_time = timezone.make_aware(tx_time, timezone.get_current_timezone())
-                
-                tx = TransaksiPenjualan.objects.create(
-                    kasir=kasir_user,
-                    total_harga=0
-                )
-                tx.tanggal_transaksi = tx_time
-                tx.save()
+        # Disable auto_now_add to allow custom timestamps
+        field = TransaksiPenjualan._meta.get_field('tanggal_transaksi')
+        field.auto_now_add = False
 
-                total_harga = 0
-                items_count = random.randint(1, 3)
-                chosen_food = random.sample(geprek_menus, items_count)
+        try:
+            while current_date <= end_date:
+                daily_total = 0
+                target_revenue = random.randint(500000, 600000)
                 
-                for food in chosen_food:
-                    qty = random.choices([1, 2, 3, 4], weights=[0.6, 0.25, 0.1, 0.05])[0]
-                    subtotal = float(food.harga) * qty
-                    DetailTransaksi.objects.create(
-                        transaksi=tx,
-                        menu=food,
-                        kuantitas=qty,
-                        subtotal=subtotal
-                    )
-                    total_harga += subtotal
-                    portions_count += qty
-
-                tx.total_harga = total_harga
-                tx.save()
-                total_sales_val += total_harga
-                tx_count += 1
+                while daily_total < (target_revenue - 18000):
+                    hour = random.randint(10, 20)
+                    minute = random.randint(0, 59)
+                    second = random.randint(0, 59)
+                    
+                    tx_time = current_date.replace(hour=hour, minute=minute, second=second)
+                    tx_time = timezone.make_aware(tx_time, timezone.get_current_timezone())
+                    
+                    total_harga = 0
+                    items_count = random.choices([1, 2, 3], weights=[0.5, 0.35, 0.15])[0]
+                    chosen_food = random.sample(geprek_menus, min(items_count, len(geprek_menus)))
+                    
+                    tx_details = []
+                    for food in chosen_food:
+                        qty = random.choices([1, 2, 3, 4], weights=[0.6, 0.25, 0.1, 0.05])[0]
+                        subtotal = float(food.harga) * qty
+                        
+                        tx_details.append(DetailTransaksi(
+                            menu=food,
+                            kuantitas=qty,
+                            subtotal=subtotal
+                        ))
+                        total_harga += subtotal
+                        portions_count += qty
+                    
+                    txs_to_create.append(TransaksiPenjualan(
+                        kasir=kasir_user,
+                        total_harga=total_harga,
+                        tanggal_transaksi=tx_time
+                    ))
+                    details_by_tx_index.append(tx_details)
+                    
+                    daily_total += total_harga
+                    total_sales_val += total_harga
+                    tx_count += 1
+                    
+                current_date += timedelta(days=1)
                 
-            current_date += timedelta(days=1)
+            self.stdout.write(f"Menyimpan {len(txs_to_create)} transaksi ke database...")
+            created_txs = TransaksiPenjualan.objects.bulk_create(txs_to_create)
+            
+            all_details_to_create = []
+            for i, tx in enumerate(created_txs):
+                for detail in details_by_tx_index[i]:
+                    detail.transaksi_id = tx.id
+                    all_details_to_create.append(detail)
+            
+            self.stdout.write(f"Menyimpan {len(all_details_to_create)} item detail transaksi...")
+            DetailTransaksi.objects.bulk_create(all_details_to_create)
+            
+        finally:
+            field.auto_now_add = True
 
         self.stdout.write(self.style.SUCCESS(
             f'Seeding selesai! Berhasil membuat {tx_count} transaksi, '
