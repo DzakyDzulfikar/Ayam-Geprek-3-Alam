@@ -1,4 +1,5 @@
 import math
+from collections import defaultdict
 from datetime import timedelta
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
@@ -20,8 +21,7 @@ def predict_sales_and_stock(days_to_predict=7):
     2. Menghitung penggunaan bahan baku harian secara riil berdasarkan resep dan riwayat transaksi.
     3. Melakukan forecasting kebutuhan bahan baku secara individual untuk setiap item.
     """
-    from collections import defaultdict
-    
+
     # 1. Mengambil data Penjualan Porsi Harian untuk Grafik Line Chart
     qs = DetailTransaksi.objects.annotate(
         tanggal=TruncDate('transaksi__tanggal_transaksi')

@@ -31,6 +31,24 @@ class BahanBakuViewSet(viewsets.ModelViewSet):
             print("Error recalculating min stocks:", e)
         return BahanBaku.objects.all()
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        from .ai_service import recalculate_all_minimum_stocks
+        try:
+            recalculate_all_minimum_stocks()
+            instance.refresh_from_db()
+        except Exception as e:
+            print("Error recalculating min stocks:", e)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        from .ai_service import recalculate_all_minimum_stocks
+        try:
+            recalculate_all_minimum_stocks()
+            instance.refresh_from_db()
+        except Exception as e:
+            print("Error recalculating min stocks:", e)
+
 class TransaksiPenjualanViewSet(viewsets.ModelViewSet):
     """
     CRUD API endpoint untuk Transaksi Penjualan (POS)
