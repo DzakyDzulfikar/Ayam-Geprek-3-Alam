@@ -334,12 +334,6 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                content={<CustomPieTooltip />} 
-                allowEscapeViewBox={true} 
-                offset={50}
-                transitionDuration={200} 
-              />
             </PieChart>
           </ResponsiveContainer>
           
