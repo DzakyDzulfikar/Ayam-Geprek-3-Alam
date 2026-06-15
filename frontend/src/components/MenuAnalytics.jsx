@@ -42,6 +42,18 @@ export function MenuAnalytics() {
 
   const COLORS = ['#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa'];
 
+  const getShortName = (name) => {
+    if (!name) return '';
+    const lower = name.toLowerCase();
+    if (lower.includes('paha atas')) return 'Paha Atas';
+    if (lower.includes('paha bawah')) return 'Paha Bawah';
+    if (lower.includes('sayap')) return 'Sayap';
+    if (lower.includes('dada')) return 'Dada';
+    if (lower.includes('original')) return 'Original';
+    const words = name.split(' ');
+    return words[2] || words[0] || name;
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -263,6 +275,18 @@ export function MenuAnalytics() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative transition-colors duration-300">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Distribusi Proporsi Penjualan</h3>
           
+          {/* Detailed Info Badge (Outside the circle, at the top right of the card) */}
+          {activeSlice && (
+            <div className="absolute top-5 right-6 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm z-20 animate-in fade-in zoom-in-95 duration-250 pointer-events-none flex items-center gap-2">
+              <span className="text-gray-500 dark:text-gray-400 font-medium">Detail:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{getShortName(activeSlice.name)}</span>
+              <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
+              <span className="text-orange-600 dark:text-orange-500 font-bold">{formatCurrency(activeSlice.value)}</span>
+              <span className="text-gray-300 dark:text-gray-700 font-light">|</span>
+              <span className="text-gray-900 dark:text-white font-bold">{((activeSlice.value / (totalRevenue || 1)) * 100).toFixed(0)}% Omzet</span>
+            </div>
+          )}
+
           <ResponsiveContainer width="100%" height={320} style={{ overflow: 'visible' }}>
             <PieChart margin={{ top: 0, bottom: 0 }} style={{ overflow: 'visible' }}>
               <Pie
@@ -270,7 +294,7 @@ export function MenuAnalytics() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name.split(' ')[2] || name.split(' ')[0]}: ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${getShortName(name)}: ${(percent * 100).toFixed(0)}%`}
                 outerRadius={110}
                 innerRadius={75}
                 fill="#8884d8"
@@ -294,7 +318,6 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} />
             </PieChart>
           </ResponsiveContainer>
           
@@ -303,7 +326,7 @@ export function MenuAnalytics() {
             {activeSlice ? (
               <div className="animate-in fade-in zoom-in-95 duration-200">
                 <span className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 truncate uppercase tracking-wider mb-0.5">
-                  {activeSlice.name.split(' ').slice(0, 2).join(' ')}
+                  {getShortName(activeSlice.name)}
                 </span>
                 <span className="block text-base font-black text-orange-600 dark:text-orange-500 leading-none">
                   {formatCurrency(activeSlice.value)}
