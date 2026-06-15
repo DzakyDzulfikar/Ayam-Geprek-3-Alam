@@ -31,11 +31,14 @@ export function MenuAnalytics() {
     }
   };
 
-  // Pie chart data
-  const pieData = menuData.slice(0, 5).map((item) => ({
-    name: item.name,
-    value: item.revenue,
-  }));
+  // Pie chart data sorted by revenue descending
+  const pieData = [...menuData]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5)
+    .map((item) => ({
+      name: item.name,
+      value: item.revenue,
+    }));
 
   const activeSlice = activePieIndex !== -1 ? pieData[activePieIndex] : null;
   const totalTop5Revenue = pieData.reduce((sum, item) => sum + item.value, 0);
@@ -306,7 +309,7 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} />
+              <Tooltip content={<CustomPieTooltip />} position={{ x: 0, y: 0 }} allowEscapeViewBox={true} />
             </PieChart>
           </ResponsiveContainer>
           
