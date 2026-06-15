@@ -102,7 +102,7 @@ export function MenuAnalytics() {
       const data = payload[0].payload;
       const percent = ((data.value / (totalRevenue || 1)) * 100).toFixed(0);
       return (
-        <div className="bg-white dark:bg-gray-900 p-3.5 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl transition-all pointer-events-none z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="bg-white dark:bg-gray-900 p-3.5 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl transition-all pointer-events-none z-50">
           <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{getShortName(data.name)}</p>
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between items-center gap-6">
@@ -250,7 +250,7 @@ export function MenuAnalytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12, className: 'dark:fill-gray-400'}} angle={-25} textAnchor="end" height={80} axisLine={false} tickLine={false} />
               <YAxis stroke="#6b7280" tick={{ className: 'dark:fill-gray-400' }} tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} allowEscapeViewBox={true} />
+              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} allowEscapeViewBox={true} transitionDuration={0} />
               <Bar 
                 dataKey="revenue" 
                 fill="url(#colorMenuRevenue)" 
@@ -286,8 +286,6 @@ export function MenuAnalytics() {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${getShortName(name)}: ${(percent * 100).toFixed(0)}%`}
-                startAngle={90}
-                endAngle={-270}
                 outerRadius={110}
                 innerRadius={75}
                 fill="#8884d8"
@@ -311,14 +309,14 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} />
+              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} transitionDuration={0} />
             </PieChart>
           </ResponsiveContainer>
           
           {/* Centered Total Text */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%-1.5rem)] text-center pointer-events-none max-w-[150px] z-10">
             {activeSlice ? (
-              <div className="animate-in fade-in zoom-in-95 duration-200">
+              <div>
                 <span className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 truncate uppercase tracking-wider mb-0.5">
                   {getShortName(activeSlice.name)}
                 </span>
@@ -330,7 +328,7 @@ export function MenuAnalytics() {
                 </span>
               </div>
             ) : (
-              <div className="animate-in fade-in duration-300">
+              <div>
                 <span className="block text-2xl font-black text-gray-900 dark:text-white leading-none">Top 5</span>
                 <span className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">Menu</span>
                 <span className="block text-[10px] text-gray-450 dark:text-gray-500 font-bold mt-1">{formatCurrency(totalTop5Revenue)}</span>
