@@ -176,7 +176,7 @@ export function DashboardMain() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-600 dark:text-gray-400 mb-1">
-                Menu Terlaris
+                Menu Terlaris (Semua Waktu)
               </p>
               <h3
                 className="text-lg font-bold text-gray-900 dark:text-white mb-2 w-max max-w-[150px] truncate"
@@ -184,9 +184,13 @@ export function DashboardMain() {
               >
                 {metrics.top_menu}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 mb-2">
                 {metrics.top_menu_sold} porsi terjual
               </p>
+              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm">Semua waktu</span>
+              </div>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🏆</span>
@@ -282,7 +286,7 @@ export function DashboardMain() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Menu Terpopuler
+            Menu Terpopuler (Semua Waktu)
           </h3>
           <ResponsiveContainer width="100%" height={340}>
             <BarChart
