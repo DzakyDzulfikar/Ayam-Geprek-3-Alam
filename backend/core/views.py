@@ -221,6 +221,10 @@ def get_dashboard_summary(request):
         else:
             first_tx_date = f"{today.day} {months_id[today.month]} {today.year}"
 
+        # Hitung rentang tanggal minggu berjalan
+        end_of_week = start_of_week + timedelta(days=6)
+        weekly_range = f"{start_of_week.day} {months_id[start_of_week.month]} {start_of_week.year} s/d {end_of_week.day} {months_id[end_of_week.month]} {end_of_week.year}"
+
         return Response({
             "total_revenue": float(total_revenue),
             "todays_portions": todays_portions,
@@ -232,7 +236,8 @@ def get_dashboard_summary(request):
             "sales_data": sales_weekly,
             "top_menu_data": top_menu_data,
             "recent_transactions": recent_txs,
-            "first_tx_date": first_tx_date
+            "first_tx_date": first_tx_date,
+            "weekly_range": weekly_range
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

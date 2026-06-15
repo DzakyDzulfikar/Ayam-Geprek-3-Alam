@@ -35,7 +35,8 @@ export function DashboardMain() {
     safe_stock_count: 0,
     top_menu: 'Ayam Geprek Original',
     top_menu_sold: 0,
-    first_tx_date: ''
+    first_tx_date: '',
+    weekly_range: ''
   });
   const [salesData, setSalesData] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -57,7 +58,8 @@ export function DashboardMain() {
         safe_stock_count: data.safe_stock_count,
         top_menu: data.top_menu,
         top_menu_sold: data.top_menu_sold,
-        first_tx_date: data.first_tx_date
+        first_tx_date: data.first_tx_date,
+        weekly_range: data.weekly_range
       });
       setSalesData(data.sales_data);
       setRecentTransactions(data.recent_transactions);
@@ -234,9 +236,12 @@ export function DashboardMain() {
         {/* Sales Trend */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Tren Penjualan Mingguan (Omzet)
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+            Tren Penjualan Mingguan
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 font-semibold">
+            Periode: {metrics.weekly_range}
+          </p>
           <ResponsiveContainer width="100%" height={340}>
             <AreaChart
               data={salesData}
