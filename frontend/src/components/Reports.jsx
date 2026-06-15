@@ -364,7 +364,7 @@ export function Reports() {
               <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Total Penjualan</p>
               <h2 className="text-3xl font-black text-gray-900 dark:text-white">{totalSales}</h2>
             </div>
-            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-500 rounded-xl flex items-center justify-center border border-blue-100 dark:border-blue-900/50 flex-shrink-0 mr-1.5">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-100 dark:border-blue-800/50 flex-shrink-0 mr-4">
               <Package className="w-6 h-6" />
             </div>
           </div>
@@ -377,7 +377,7 @@ export function Reports() {
               <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Volume Transaksi</p>
               <h2 className="text-3xl font-black text-gray-900 dark:text-white">{totalTransactions}</h2>
             </div>
-            <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-500 rounded-xl flex items-center justify-center border border-purple-100 dark:border-purple-900/50 flex-shrink-0 mr-1.5">
+            <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center border border-purple-100 dark:border-purple-800/50 flex-shrink-0 mr-4">
               <Users className="w-6 h-6" />
             </div>
           </div>
@@ -390,7 +390,7 @@ export function Reports() {
               <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-nowrap">Rata-rata Trx.</p>
               <h2 className="text-3xl font-black text-gray-900 dark:text-white">{formatCurrency(avgTransaction)}</h2>
             </div>
-            <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500 rounded-xl flex items-center justify-center border border-green-100 dark:border-green-900/50 flex-shrink-0 mr-1.5">
+            <div className="w-12 h-12 bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center border border-green-100 dark:border-green-800/50 flex-shrink-0 mr-4">
               <TrendingUp className="w-6 h-6" />
             </div>
           </div>
