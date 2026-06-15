@@ -310,6 +310,7 @@ export function MenuAnalytics() {
                 stroke="none"
                 startAngle={startAngle}
                 endAngle={endAngle}
+                isAnimationActive={false}
                 onMouseEnter={(_, index) => setActivePieIndex(index)}
                 onMouseLeave={() => setActivePieIndex(-1)}
               >
