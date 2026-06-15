@@ -51,3 +51,9 @@ body {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #4b5563; /* gray-600 */
 }
+
+/* Make Recharts tooltips solid (non-transparent) and sit on top of everything */
+.recharts-tooltip-wrapper {
+  opacity: 1 !important;
+  z-index: 50 !important;
+}
