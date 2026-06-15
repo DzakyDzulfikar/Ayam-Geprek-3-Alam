@@ -25,7 +25,6 @@ class BahanBaku(models.Model):
     satuan = models.CharField(max_length=50) # kg, pcs, liter
     stok_saat_ini = models.FloatField(default=0.0)
     stok_minimum = models.FloatField(default=0.0) # Batas kritis peringatan stok
-    order_index = models.IntegerField(default=0)
     terakhir_diupdate = models.DateTimeField(auto_now=True)
 
     def __str__(self):

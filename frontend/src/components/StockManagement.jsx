@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import API from '../services/api';
 
 export function StockManagement() {
@@ -104,32 +104,6 @@ export function StockManagement() {
     }
   };
 
-  const handleMove = async (index, direction) => {
-    const newStocks = [...stocks];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (targetIndex < 0 || targetIndex >= newStocks.length) return;
-
-    // Swap locally
-    const temp = newStocks[index];
-    newStocks[index] = newStocks[targetIndex];
-    newStocks[targetIndex] = temp;
-    
-    // Update local state instantly
-    setStocks(newStocks);
-
-    try {
-      // Send the new sequence of IDs to the backend
-      const ids = newStocks.map(item => item.id);
-      await API.post('bahanbaku/reorder/', { ids });
-    } catch (err) {
-      console.error('Error reordering stock:', err);
-      // Revert if API call fails
-      fetchStocks();
-      alert('Gagal menyimpan urutan baru ke backend');
-    }
-  };
-
   const getLowStockCount = () => {
     return stocks.filter((stock) => stock.quantity < stock.minStock * 0.5).length;
   };
@@ -174,9 +148,6 @@ export function StockManagement() {
           <table className="w-full whitespace-nowrap">
             <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 transition-colors">
               <tr>
-                {userRole === 'admin' && (
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-20">Urutan</th>
-                )}
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Bahan</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Satuan</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Jumlah Tersedia</th>
@@ -189,7 +160,7 @@ export function StockManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {stocks.map((stock, index) => {
+              {stocks.map((stock) => {
                 const isLow = stock.quantity < stock.minStock * 0.5;
                 const isWarning = !isLow && stock.quantity < stock.minStock;
                 
@@ -221,36 +192,6 @@ export function StockManagement() {
 
                 return (
                   <tr key={stock.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
-                    {userRole === 'admin' && (
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleMove(index, 'up')}
-                            disabled={index === 0}
-                            className={`p-1 rounded-md transition-all ${
-                              index === 0 
-                                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                                : 'text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-gray-700 hover:scale-105'
-                            }`}
-                            title="Pindahkan ke Atas"
-                          >
-                            <ArrowUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleMove(index, 'down')}
-                            disabled={index === stocks.length - 1}
-                            className={`p-1 rounded-md transition-all ${
-                              index === stocks.length - 1 
-                                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                                : 'text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-gray-700 hover:scale-105'
-                            }`}
-                            title="Pindahkan ke Bawah"
-                          >
-                            <ArrowDown className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    )}
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{stock.name}</td>
                     <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{stock.unit}</td>
                     <td className="px-6 py-4">
