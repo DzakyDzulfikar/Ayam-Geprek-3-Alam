@@ -258,7 +258,12 @@ export function DashboardMain() {
                 tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1).replace('.0', '')}jt` : (value >= 1000 ? `${(value / 1000).toFixed(0)}rb` : value)}
                 tick={{ className: "dark:fill-gray-400" }}
               />
-              <Tooltip content={<CustomSalesTooltip />} allowEscapeViewBox={true} />
+              <Tooltip 
+                content={<CustomSalesTooltip />} 
+                allowEscapeViewBox={true} 
+                offset={20}
+                transitionDuration={200}
+              />
               <Area
                 type="monotone"
                 dataKey="penjualan"
@@ -331,7 +336,13 @@ export function DashboardMain() {
                 stroke="#9ca3af"
                 tick={{ className: "dark:fill-gray-400" }}
               />
-              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === "dark" ? "#374151" : "#f3f4f6", opacity: 0.3 }} allowEscapeViewBox={true} />
+              <Tooltip 
+                content={<CustomBarTooltip />} 
+                cursor={{ fill: theme === "dark" ? "#374151" : "#f3f4f6", opacity: 0.3 }} 
+                allowEscapeViewBox={true} 
+                offset={20}
+                transitionDuration={200}
+              />
               <Bar 
                 dataKey="sold" 
                 fill="url(#colorDashboardBar)" 

@@ -266,7 +266,13 @@ export function MenuAnalytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12, className: 'dark:fill-gray-400'}} angle={-25} textAnchor="end" height={80} axisLine={false} tickLine={false} />
               <YAxis stroke="#6b7280" tick={{ className: 'dark:fill-gray-400' }} tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} allowEscapeViewBox={true} transitionDuration={0} />
+              <Tooltip 
+                content={<CustomBarTooltip />} 
+                cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} 
+                allowEscapeViewBox={true} 
+                offset={20}
+                transitionDuration={200} 
+              />
               <Bar 
                 dataKey="revenue" 
                 fill="url(#colorMenuRevenue)" 
@@ -328,7 +334,12 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} transitionDuration={0} />
+              <Tooltip 
+                content={<CustomPieTooltip />} 
+                allowEscapeViewBox={true} 
+                offset={50}
+                transitionDuration={200} 
+              />
             </PieChart>
           </ResponsiveContainer>
           

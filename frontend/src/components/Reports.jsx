@@ -417,7 +417,12 @@ export function Reports() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="day" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
               <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tickFormatter={(value) => `${value / 1000000}jt`} tick={{ className: 'dark:fill-gray-400' }} />
-              <Tooltip content={<CustomReportRevenueTooltip />} allowEscapeViewBox={true} />
+              <Tooltip 
+                content={<CustomReportRevenueTooltip />} 
+                allowEscapeViewBox={true} 
+                offset={20}
+                transitionDuration={200}
+              />
               <Area
                 type="monotone"
                 dataKey="revenue"
@@ -448,7 +453,12 @@ export function Reports() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="day" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
               <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ className: 'dark:fill-gray-400' }} />
-              <Tooltip content={<CustomReportSalesTooltip />} allowEscapeViewBox={true} />
+              <Tooltip 
+                content={<CustomReportSalesTooltip />} 
+                allowEscapeViewBox={true} 
+                offset={20}
+                transitionDuration={200}
+              />
               <Area
                 type="monotone"
                 dataKey="sales"
