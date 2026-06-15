@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import authenticate
@@ -19,7 +19,7 @@ class BahanBakuViewSet(viewsets.ModelViewSet):
     """
     CRUD API endpoint untuk Manajemen Stok Bahan Baku
     """
-    queryset = BahanBaku.objects.all()
+    queryset = BahanBaku.objects.all().order_by('order_index', 'id')
     serializer_class = BahanBakuSerializer
     permission_classes = [AllowAny]
 
@@ -29,7 +29,14 @@ class BahanBakuViewSet(viewsets.ModelViewSet):
             recalculate_all_minimum_stocks()
         except Exception as e:
             print("Error recalculating min stocks:", e)
-        return BahanBaku.objects.all()
+        return BahanBaku.objects.all().order_by('order_index', 'id')
+
+    @action(detail=False, methods=['post'])
+    def reorder(self, request):
+        ids = request.data.get('ids', [])
+        for index, item_id in enumerate(ids):
+            BahanBaku.objects.filter(id=item_id).update(order_index=index)
+        return Response({'status': 'reordered'})
 
 class TransaksiPenjualanViewSet(viewsets.ModelViewSet):
     """
