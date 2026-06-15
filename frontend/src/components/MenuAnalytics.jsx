@@ -235,7 +235,7 @@ export function MenuAnalytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
               <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12, className: 'dark:fill-gray-400'}} angle={-25} textAnchor="end" height={80} axisLine={false} tickLine={false} />
               <YAxis stroke="#6b7280" tick={{ className: 'dark:fill-gray-400' }} tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} />
+              <Tooltip content={<CustomBarTooltip />} cursor={{ fill: theme === 'dark' ? '#374151' : '#fef08a', opacity: theme === 'dark' ? 0.3 : 0.4 }} allowEscapeViewBox={true} />
               <Bar 
                 dataKey="revenue" 
                 fill="url(#colorMenuRevenue)" 
@@ -263,8 +263,8 @@ export function MenuAnalytics() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative transition-colors duration-300">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Distribusi Proporsi Penjualan</h3>
           
-          <ResponsiveContainer width="100%" height={320}>
-            <PieChart margin={{ top: 0, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={320} style={{ overflow: 'visible' }}>
+            <PieChart margin={{ top: 0, bottom: 0 }} style={{ overflow: 'visible' }}>
               <Pie
                 data={pieData}
                 cx="50%"
@@ -294,7 +294,7 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
+              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} />
             </PieChart>
           </ResponsiveContainer>
           

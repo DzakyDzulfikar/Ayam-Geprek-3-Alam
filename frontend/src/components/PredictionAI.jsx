@@ -246,7 +246,7 @@ export function PredictionAI() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} className="opacity-50 dark:opacity-20" />
                 <XAxis dataKey="date" stroke="#9ca3af" tick={{ className: 'dark:fill-gray-400' }} axisLine={false} tickLine={false} tickMargin={12} />
                 <YAxis stroke="#9ca3af" tick={{ className: 'dark:fill-gray-400' }} axisLine={false} tickLine={false} tickMargin={12} label={{ value: 'Porsi Terjual', angle: -90, position: 'insideLeft', offset: -5, className: 'dark:fill-gray-400' }} />
-                <Tooltip content={<CustomPredictTooltip />} />
+                <Tooltip content={<CustomPredictTooltip />} allowEscapeViewBox={true} />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Area
                   type="monotone"
