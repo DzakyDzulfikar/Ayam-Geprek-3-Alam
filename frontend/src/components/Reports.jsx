@@ -358,43 +358,31 @@ export function Reports() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
-          <div className="flex items-start justify-between mb-2 gap-4">
-            <div>
-              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Total Penjualan</p>
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white">{totalSales}</h2>
-            </div>
-            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-100 dark:border-blue-800/50 flex-shrink-0 mr-4">
-              <Package className="w-6 h-6" />
-            </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md relative overflow-hidden group">
+          <Package className="absolute -right-4 -top-4 w-24 h-24 opacity-10 dark:opacity-20 text-blue-500/80 dark:text-blue-500/30 transform -rotate-12 pointer-events-none transition-transform group-hover:scale-110 duration-300" />
+          <div className="relative z-10">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Total Penjualan</p>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-3">{totalSales}</h2>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Porsi terjual ke pelanggan</p>
           </div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Porsi terjual ke pelanggan</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
-          <div className="flex items-start justify-between mb-2 gap-4">
-            <div>
-              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Volume Transaksi</p>
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white">{totalTransactions}</h2>
-            </div>
-            <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center border border-purple-100 dark:border-purple-800/50 flex-shrink-0 mr-4">
-              <Users className="w-6 h-6" />
-            </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md relative overflow-hidden group">
+          <Users className="absolute -right-4 -top-4 w-24 h-24 opacity-10 dark:opacity-20 text-purple-500/80 dark:text-purple-500/30 transform -rotate-12 pointer-events-none transition-transform group-hover:scale-110 duration-300" />
+          <div className="relative z-10">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Volume Transaksi</p>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-3">{totalTransactions}</h2>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Pelanggan aktif dilayani</p>
           </div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Pelanggan aktif dilayani</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-green-200 dark:hover:border-green-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
-          <div className="flex items-start justify-between mb-2 gap-4">
-            <div>
-              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-nowrap">Rata-rata Trx.</p>
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white">{formatCurrency(avgTransaction)}</h2>
-            </div>
-            <div className="w-12 h-12 bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center border border-green-100 dark:border-green-800/50 flex-shrink-0 mr-4">
-              <TrendingUp className="w-6 h-6" />
-            </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-green-200 dark:hover:border-green-600 transition-all duration-300 hover:scale-[1.02] hover:shadow-md relative overflow-hidden group">
+          <TrendingUp className="absolute -right-4 -top-4 w-24 h-24 opacity-10 dark:opacity-20 text-green-500/80 dark:text-green-500/30 transform -rotate-12 pointer-events-none transition-transform group-hover:scale-110 duration-300" />
+          <div className="relative z-10">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-nowrap">Rata-rata Trx.</p>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-3">{formatCurrency(avgTransaction)}</h2>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Nilai per pelanggan</p>
           </div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded w-max transition-colors">Nilai per pelanggan</p>
         </div>
       </div>
 
