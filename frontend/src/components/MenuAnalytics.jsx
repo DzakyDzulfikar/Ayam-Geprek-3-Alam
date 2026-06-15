@@ -295,15 +295,15 @@ export function MenuAnalytics() {
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Distribusi Proporsi Penjualan</h3>
           
           <ResponsiveContainer width="100%" height={320} style={{ overflow: 'visible' }}>
-            <PieChart margin={{ top: 0, bottom: 0 }} style={{ overflow: 'visible' }}>
+            <PieChart margin={{ top: 20, right: 60, left: 60, bottom: 20 }} style={{ overflow: 'visible' }}>
               <Pie
                 data={pieData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${getShortName(name)}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={110}
-                innerRadius={75}
+                outerRadius={95}
+                innerRadius={65}
                 fill="#8884d8"
                 dataKey="value"
                 paddingAngle={3}
