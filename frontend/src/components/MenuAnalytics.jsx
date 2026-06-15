@@ -31,10 +31,22 @@ export function MenuAnalytics() {
     }
   };
 
-  // Pie chart data sorted by revenue descending
+  const getOrderIndex = (name) => {
+    if (!name) return 5;
+    const lower = name.toLowerCase();
+    if (lower.includes('geprek') || lower.includes('paket')) return 0;
+    if (lower.includes('sayap')) return 1;
+    if (lower.includes('paha bawah')) return 2;
+    if (lower.includes('dada')) return 3;
+    if (lower.includes('paha atas')) return 4;
+    return 5;
+  };
+
+  // Pie chart data sorted by custom position sequence: Geprek (top middle), Sayap (top right), Paha Bawah (bottom right), Dada (bottom left), Paha Atas (top left)
   const pieData = [...menuData]
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5)
+    .sort((a, b) => getOrderIndex(a.name) - getOrderIndex(b.name))
     .map((item) => ({
       name: item.name,
       value: item.revenue,
@@ -42,6 +54,10 @@ export function MenuAnalytics() {
 
   const activeSlice = activePieIndex !== -1 ? pieData[activePieIndex] : null;
   const totalTop5Revenue = pieData.reduce((sum, item) => sum + item.value, 0);
+  const geprekRatio = totalTop5Revenue > 0 ? (pieData[0]?.value / totalTop5Revenue) : 0.4;
+  const geprekAngle = geprekRatio * 360;
+  const startAngle = 90 + (geprekAngle / 2);
+  const endAngle = startAngle - 360;
 
   const COLORS = ['#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa'];
 
@@ -292,6 +308,8 @@ export function MenuAnalytics() {
                 dataKey="value"
                 paddingAngle={3}
                 stroke="none"
+                startAngle={startAngle}
+                endAngle={endAngle}
                 onMouseEnter={(_, index) => setActivePieIndex(index)}
                 onMouseLeave={() => setActivePieIndex(-1)}
               >
