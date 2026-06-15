@@ -102,16 +102,16 @@ export function MenuAnalytics() {
       const data = payload[0].payload;
       const percent = ((data.value / (totalRevenue || 1)) * 100).toFixed(0);
       return (
-        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg transition-colors">
-          <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{data.name}</p>
-          <div className="space-y-1 text-xs">
+        <div className="bg-white dark:bg-gray-900 p-3.5 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl transition-all pointer-events-none z-50 animate-in fade-in zoom-in-95 duration-150">
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">{getShortName(data.name)}</p>
+          <div className="space-y-1.5 text-xs">
             <div className="flex justify-between items-center gap-6">
-              <span className="text-gray-550 dark:text-gray-400 font-medium">Revenue:</span>
+              <span className="text-gray-500 dark:text-gray-400 font-medium">Revenue:</span>
               <span className="text-orange-600 dark:text-orange-500 font-bold">{formatCurrency(data.value)}</span>
             </div>
             <div className="flex justify-between items-center gap-6">
-              <span className="text-gray-550 dark:text-gray-400 font-medium">Kontribusi:</span>
-              <span className="text-gray-900 dark:text-white font-bold">{percent}% dari Top 5</span>
+              <span className="text-gray-500 dark:text-gray-400 font-medium">Kontribusi:</span>
+              <span className="text-gray-900 dark:text-white font-bold">{percent}% Omzet</span>
             </div>
           </div>
         </div>
@@ -286,6 +286,8 @@ export function MenuAnalytics() {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${getShortName(name)}: ${(percent * 100).toFixed(0)}%`}
+                startAngle={90}
+                endAngle={-270}
                 outerRadius={110}
                 innerRadius={75}
                 fill="#8884d8"
@@ -309,7 +311,7 @@ export function MenuAnalytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip content={<CustomPieTooltip />} position={{ x: 0, y: 0 }} allowEscapeViewBox={true} />
+              <Tooltip content={<CustomPieTooltip />} allowEscapeViewBox={true} />
             </PieChart>
           </ResponsiveContainer>
           
