@@ -209,6 +209,18 @@ def get_dashboard_summary(request):
                 "kasir": kasir_name
             })
 
+        # Ambil tanggal transaksi pertama untuk informasi periode all-time
+        months_id = {
+            1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "Mei", 6: "Jun",
+            7: "Jul", 8: "Ags", 9: "Sep", 10: "Okt", 11: "Nov", 12: "Des"
+        }
+        first_tx = TransaksiPenjualan.objects.order_by('tanggal_transaksi').first()
+        if first_tx:
+            local_time = timezone.localtime(first_tx.tanggal_transaksi)
+            first_tx_date = f"{local_time.day} {months_id[local_time.month]} {local_time.year}"
+        else:
+            first_tx_date = f"{today.day} {months_id[today.month]} {today.year}"
+
         return Response({
             "total_revenue": float(total_revenue),
             "todays_portions": todays_portions,
@@ -219,7 +231,8 @@ def get_dashboard_summary(request):
             "top_menu_sold": top_menu_data[0]["sold"] if top_menu_data else 0,
             "sales_data": sales_weekly,
             "top_menu_data": top_menu_data,
-            "recent_transactions": recent_txs
+            "recent_transactions": recent_txs,
+            "first_tx_date": first_tx_date
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

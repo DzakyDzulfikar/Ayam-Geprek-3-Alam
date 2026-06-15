@@ -34,7 +34,8 @@ export function DashboardMain() {
     warning_stock_count: 0,
     safe_stock_count: 0,
     top_menu: 'Ayam Geprek Original',
-    top_menu_sold: 0
+    top_menu_sold: 0,
+    first_tx_date: ''
   });
   const [salesData, setSalesData] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -55,7 +56,8 @@ export function DashboardMain() {
         warning_stock_count: data.warning_stock_count,
         safe_stock_count: data.safe_stock_count,
         top_menu: data.top_menu,
-        top_menu_sold: data.top_menu_sold
+        top_menu_sold: data.top_menu_sold,
+        first_tx_date: data.first_tx_date
       });
       setSalesData(data.sales_data);
       setRecentTransactions(data.recent_transactions);
@@ -176,7 +178,7 @@ export function DashboardMain() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-600 dark:text-gray-400 mb-1">
-                Menu Terlaris (Semua Waktu)
+                Menu Terlaris
               </p>
               <h3
                 className="text-lg font-bold text-gray-900 dark:text-white mb-2 w-max max-w-[150px] truncate"
@@ -187,9 +189,9 @@ export function DashboardMain() {
               <p className="text-gray-500 dark:text-gray-400 mb-2">
                 {metrics.top_menu_sold} porsi terjual
               </p>
-              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-sm">Semua waktu</span>
+              <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 mt-2 bg-green-50 dark:bg-green-950/20 px-2.5 py-1 rounded w-max border border-green-100 dark:border-green-900/50">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">{metrics.first_tx_date} s/d Hari Ini</span>
               </div>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-lg flex items-center justify-center">
@@ -285,9 +287,12 @@ export function DashboardMain() {
         {/* Top Menu */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-md transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-400 to-amber-500"></div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Menu Terpopuler (Semua Waktu)
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+            Menu Terpopuler
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 font-semibold">
+            Periode: {metrics.first_tx_date} s/d Hari Ini
+          </p>
           <ResponsiveContainer width="100%" height={340}>
             <BarChart
               data={topMenuData}
